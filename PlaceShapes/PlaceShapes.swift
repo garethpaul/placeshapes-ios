@@ -97,7 +97,6 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             mapView.remove(polygon)
             
             // Create new polygon
-            print(coordinates)
             polygon = MKPolygon(coordinates: &coordinates, count: coordinates.count)
             
             // Add polygon to map

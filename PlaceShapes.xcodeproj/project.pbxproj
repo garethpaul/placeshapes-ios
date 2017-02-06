@@ -10,6 +10,7 @@
 		C36F7E471E49256500181187 /* PlaceShapes.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C36F7E3D1E49256500181187 /* PlaceShapes.framework */; };
 		C36F7E4C1E49256500181187 /* PlaceShapesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C36F7E4B1E49256500181187 /* PlaceShapesTests.swift */; };
 		C36F7E4E1E49256500181187 /* PlaceShapes.h in Headers */ = {isa = PBXBuildFile; fileRef = C36F7E401E49256500181187 /* PlaceShapes.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C36F7E581E4926CD00181187 /* PlaceShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C36F7E571E4926CD00181187 /* PlaceShapes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +30,7 @@
 		C36F7E461E49256500181187 /* PlaceShapesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlaceShapesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C36F7E4B1E49256500181187 /* PlaceShapesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceShapesTests.swift; sourceTree = "<group>"; };
 		C36F7E4D1E49256500181187 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C36F7E571E4926CD00181187 /* PlaceShapes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaceShapes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,7 @@
 		C36F7E3F1E49256500181187 /* PlaceShapes */ = {
 			isa = PBXGroup;
 			children = (
+				C36F7E571E4926CD00181187 /* PlaceShapes.swift */,
 				C36F7E401E49256500181187 /* PlaceShapes.h */,
 				C36F7E411E49256500181187 /* Info.plist */,
 			);
@@ -148,6 +151,7 @@
 				TargetAttributes = {
 					C36F7E3C1E49256500181187 = {
 						CreatedOnToolsVersion = 8.1;
+						LastSwiftMigration = 0810;
 						ProvisioningStyle = Automatic;
 					};
 					C36F7E451E49256500181187 = {
@@ -196,6 +200,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C36F7E581E4926CD00181187 /* PlaceShapes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,6 +325,7 @@
 		C36F7E521E49256500181187 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -331,6 +337,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.PlaceShapes;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -338,6 +345,7 @@
 		C36F7E531E49256500181187 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -356,6 +364,7 @@
 		C36F7E551E49256500181187 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = PlaceShapesTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.PlaceShapesTests;
@@ -367,6 +376,7 @@
 		C36F7E561E49256500181187 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = PlaceShapesTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.PlaceShapesTests;
@@ -394,6 +404,7 @@
 				C36F7E531E49256500181187 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C36F7E541E49256500181187 /* Build configuration list for PBXNativeTarget "PlaceShapesTests" */ = {
 			isa = XCConfigurationList;
@@ -402,6 +413,7 @@
 				C36F7E561E49256500181187 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
