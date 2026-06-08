@@ -1,5 +1,8 @@
 # placeshapes-ios
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/placeshapes-ios` is an Apple platform application or Swift sample. Draw Shapes on Map
@@ -76,4 +79,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > placeshapes-ios <!-- README-OVERVIEW-IMAGE --> PlaceShapes Draw on a map to return a polygon of a given shape. Getting Started 1. Clone this repo 2. Extend PlaceShapes Examples
-
