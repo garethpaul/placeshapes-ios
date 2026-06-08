@@ -3,7 +3,7 @@
 This document explains the current state and direction of the project.
 Project overview and developer docs: [`README.md`](README.md)
 
-PlaceShapes iOS is a Swift MapKit sample for drawing a polygon on a map by
+PlaceShapes iOS is a Swift 3 MapKit sample for drawing a polygon on a map by
 collecting touch coordinates and rendering an `MKPolygon` overlay.
 
 The repository is useful as a focused interaction example: edit mode freezes

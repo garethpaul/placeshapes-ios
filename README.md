@@ -27,7 +27,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `PlaceShapesTests` - source or example code
 - `SECURITY.md` - security reporting and disclosure guidance
 - `VISION.md` - project direction and maintenance guardrails
-- `docs/plans/2026-06-08-placeshapes-ios-baseline.md` - completed baseline plan
+- `docs/plans/2026-06-08-placeshapes-baseline.md` - completed baseline plan
 - `scripts/check-baseline.py` - static checks for project and privacy guardrails
 
 Additional scan context:
@@ -91,7 +91,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Run `make check` before changing project metadata, MapKit drawing behavior,
   or privacy-related docs.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
-- See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-ios-baseline.md` for
+- See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-baseline.md` for
   the current static baseline.
 - See `VISION.md` for project direction and contribution guardrails.
 

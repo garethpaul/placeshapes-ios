@@ -104,10 +104,6 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             
             // Remove existing polygon
             mapView.remove(polygon)
-
-            guard coordinates.count >= 3 else {
-                return
-            }
             
             // Create new polygon
             polygon = MKPolygon(coordinates: &coordinates, count: coordinates.count)
