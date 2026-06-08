@@ -39,7 +39,6 @@ Canonical security policy and reporting:
 
 - [`SECURITY.md`](SECURITY.md)
 
-
 Map drawings can represent private places. The component should keep drawn
 coordinates local by default and make any export or sharing behavior explicit.
 
