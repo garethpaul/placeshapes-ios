@@ -1,3 +1,8 @@
+# placeshapes-ios
+
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 #PlaceShapes
 
 Draw on a map to return a polygon of a given shape.
