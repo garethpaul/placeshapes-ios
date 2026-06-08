@@ -78,4 +78,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> placeshapes-ios <!-- README-OVERVIEW-IMAGE --> PlaceShapes Draw on a map to return a polygon of a given shape. Getting Started 1. Clone this repo 2. Extend PlaceShapes Examples
+> placeshapes-ios PlaceShapes Draw on a map to return a polygon of a given shape. Getting Started 1. Clone this repo 2. Extend PlaceShapes Examples
