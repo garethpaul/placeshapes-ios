@@ -38,7 +38,7 @@ Contribution rules:
 Map drawings can represent private places. The component should keep drawn
 coordinates local by default and make any export or sharing behavior explicit.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Silent coordinate upload or analytics
 - Large UI redesigns unrelated to drawing behavior
