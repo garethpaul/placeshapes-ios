@@ -28,15 +28,26 @@ Helpful reports include:
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found mobile permission or privacy-sensitive data handling; changes in those areas should receive security-focused review before merge.
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
+- The current MapKit sample keeps drawn coordinates local by default. No
+  network upload, analytics export, or location-sharing behavior is implemented
+  in the checked-in source.
 - Dependency manifests detected: Podfile. Dependency updates should preserve lockfiles when present and avoid introducing packages without a clear maintenance reason.
 
 ## Mobile Privacy Notes
 
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
+Map drawings can represent private homes, workplaces, routes, or sensitive
+places. Reports about coordinate export, persistence, upload, analytics, or
+sharing behavior should include the code path and whether user consent is
+visible.
+
 ## Dependency and Supply Chain Security
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
+
+Run `make check` before changing project metadata, MapKit drawing behavior,
+privacy docs, or CocoaPods configuration.
 
 ## Safe Research Guidelines
 

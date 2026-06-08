@@ -13,6 +13,10 @@ shown with a custom renderer.
 The goal is to keep the drawing behavior easy to understand while making the
 library and app integration path clearer.
 
+Current baseline: `make check` performs static verification of the Xcode
+metadata, plists, MapKit drawing surfaces, and local-coordinate privacy
+guardrails without requiring Xcode.
+
 The current focus is:
 
 Priority:
@@ -21,6 +25,7 @@ Priority:
 - Keep MapKit overlay rendering simple and visible
 - Maintain the README example and screenshot context
 - Avoid changing gesture behavior without a sample app check
+- Keep drawn coordinates local by default
 
 Next priorities:
 
@@ -28,6 +33,8 @@ Next priorities:
 - Add a small sample app flow that demonstrates importing `PlaceShapes`
 - Add tests or manual verification notes for polygon creation
 - Clarify how callers can read, reset, and style drawn shapes
+- Add Xcode/simulator verification notes when the matching Apple toolchain is
+  available
 
 Contribution rules:
 
@@ -35,6 +42,7 @@ Contribution rules:
 - Include simulator notes for interaction changes.
 - Keep public API changes small and documented.
 - Do not introduce network or location upload behavior.
+- Keep `make check` passing for metadata and local-coordinate guardrails.
 
 ## Security And Responsible Use
 

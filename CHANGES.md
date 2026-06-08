@@ -1,0 +1,13 @@
+# Changes
+
+## 2026-06-08
+
+- Added `make check` with static project, plist, scheme, screenshot, and
+  documentation checks that do not require Xcode.
+- Added a small polygon guard so fewer than three touch coordinates do not
+  replace the current map overlay.
+- Added XCTest coverage for the minimum coordinate rule.
+- Documented that map coordinates stay local by default and that future export,
+  upload, or analytics behavior must be explicit.
+- Expanded local ignore rules for environment files, logs, temporary files,
+  and Xcode user state.

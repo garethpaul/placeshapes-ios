@@ -16,9 +16,14 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     var coordinates = [CLLocationCoordinate2D]()
     // Polygon to draw on map
     var polygon = MKPolygon()
+
+    static func shouldRenderPolygon(coordinateCount: Int) -> Bool {
+        return coordinateCount >= 3
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        mapView.delegate = self
         // Add an edit button to the navigation bar
         navigationItem.rightBarButtonItem = self.editButtonItem
     }
@@ -92,9 +97,17 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 let coordinate = mapView.convert(touch.location(in: mapView), toCoordinateFrom: mapView)
                 coordinates.append(coordinate)
             }
+
+            guard PlaceShapes.shouldRenderPolygon(coordinateCount: coordinates.count) else {
+                return
+            }
             
             // Remove existing polygon
             mapView.remove(polygon)
+
+            guard coordinates.count >= 3 else {
+                return
+            }
             
             // Create new polygon
             polygon = MKPolygon(coordinates: &coordinates, count: coordinates.count)
@@ -111,4 +124,3 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         }
     }
 }
-

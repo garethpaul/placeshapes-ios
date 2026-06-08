@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""Static baseline checks for the PlaceShapes iOS MapKit sample."""
+
+from pathlib import Path
+import plistlib
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+
+ROOT = Path(__file__).resolve().parents[1]
+PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
+REQUIRED = [
+    ".gitignore",
+    "CHANGES.md",
+    "Makefile",
+    "README.md",
+    "SECURITY.md",
+    "VISION.md",
+    "Podfile",
+    "PlaceShapes.xcodeproj/project.pbxproj",
+    "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+    "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/PlaceShapes.xcscheme",
+    "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/xcschememanagement.plist",
+    "PlaceShapes/Info.plist",
+    "PlaceShapes/PlaceShapes.h",
+    "PlaceShapes/PlaceShapes.swift",
+    "PlaceShapesTests/Info.plist",
+    "PlaceShapesTests/PlaceShapesTests.swift",
+    "docs/readme-overview.svg",
+    PLAN,
+    "scripts/check-baseline.py",
+    "screenshots/001.png",
+]
+
+
+def read(path):
+    return (ROOT / path).read_text(encoding="utf-8", errors="replace")
+
+
+def main():
+    failures = []
+    for path in REQUIRED:
+        if not (ROOT / path).is_file():
+            failures.append(f"required file missing: {path}")
+
+    makefile = read("Makefile")
+    if "python3 scripts/check-baseline.py" not in makefile:
+        failures.append("Makefile must expose the static checker")
+
+    gitignore = read(".gitignore")
+    for phrase in [
+        "DerivedData/",
+        "xcuserdata/",
+        "*.xcuserstate",
+        ".env",
+        "*.log",
+        "tmp/",
+    ]:
+        if phrase not in gitignore:
+            failures.append(f".gitignore must include {phrase}")
+
+    for path in [
+        "PlaceShapes/Info.plist",
+        "PlaceShapesTests/Info.plist",
+        "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/xcschememanagement.plist",
+    ]:
+        try:
+            with (ROOT / path).open("rb") as handle:
+                plistlib.load(handle)
+        except Exception as error:
+            failures.append(f"{path} must parse as a plist: {error}")
+
+    for path in [
+        "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+        "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/PlaceShapes.xcscheme",
+        "docs/readme-overview.svg",
+    ]:
+        try:
+            ET.parse(ROOT / path)
+        except ET.ParseError as error:
+            failures.append(f"{path} must parse as XML: {error}")
+
+    if (ROOT / "screenshots/001.png").read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
+        failures.append("screenshots/001.png must remain a PNG image")
+
+    podfile = read("Podfile")
+    for phrase in ["target 'PlaceShapes'", "target 'PlaceShapesTests'", "use_frameworks!"]:
+        if phrase not in podfile:
+            failures.append(f"Podfile must include {phrase}")
+    if re.search(r"^\s*pod\s+['\"]", podfile, re.MULTILINE):
+        failures.append("Podfile should not add third-party pods without updating the baseline")
+
+    pbxproj = read("PlaceShapes.xcodeproj/project.pbxproj")
+    for phrase in [
+        "PlaceShapes.framework",
+        "PlaceShapesTests.xctest",
+        "PlaceShapes.swift",
+        "PlaceShapesTests.swift",
+        "SWIFT_VERSION = 3.0",
+        "IPHONEOS_DEPLOYMENT_TARGET = 10.1",
+    ]:
+        if phrase not in pbxproj:
+            failures.append(f"project.pbxproj must reference {phrase}")
+
+    swift = read("PlaceShapes/PlaceShapes.swift")
+    tests = read("PlaceShapesTests/PlaceShapesTests.swift")
+    for phrase in [
+        "MKMapViewDelegate",
+        "MKPolygonRenderer",
+        "shouldRenderPolygon(coordinateCount:",
+        "coordinates.count",
+        "guard PlaceShapes.shouldRenderPolygon",
+    ]:
+        if phrase not in swift:
+            failures.append(f"PlaceShapes.swift must include {phrase}")
+    for phrase in [
+        "testPolygonRenderingRequiresAtLeastThreeCoordinates",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 2))",
+        "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))",
+    ]:
+        if phrase not in tests:
+            failures.append(f"PlaceShapesTests.swift must include {phrase}")
+
+    source_text = "\n".join(read(path) for path in [
+        "PlaceShapes/PlaceShapes.swift",
+        "PlaceShapesTests/PlaceShapesTests.swift",
+    ])
+    for forbidden in [
+        "URLSession",
+        "NSURLConnection",
+        "CLLocationManager",
+        "requestWhenInUseAuthorization",
+        "requestAlwaysAuthorization",
+        "showsUserLocation = true",
+        "http://",
+        "https://",
+        "Analytics",
+        "BEGIN PRIVATE KEY",
+    ]:
+        if forbidden in source_text:
+            failures.append(f"sample must not add network, location upload, analytics, or secrets: {forbidden}")
+
+    docs = "\n".join(read(path) for path in ["README.md", "SECURITY.md", "VISION.md"])
+    for phrase in [
+        "make check",
+        "MapKit",
+        "local by default",
+        "coordinates",
+        "Swift 3",
+        "CocoaPods",
+    ]:
+        if phrase.lower() not in docs.lower():
+            failures.append(f"docs must mention {phrase}")
+
+    plan = read(PLAN)
+    if "status: completed" not in plan or "make check" not in plan:
+        failures.append("plan must record completed status and verification")
+
+    if failures:
+        for failure in failures:
+            print(failure, file=sys.stderr)
+        return 1
+
+    print("placeshapes-ios baseline checks passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
