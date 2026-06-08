@@ -44,3 +44,6 @@ coordinates local by default and make any export or sharing behavior explicit.
 - Large UI redesigns unrelated to drawing behavior
 - Gesture rewrites without manual verification
 - Public API changes without README updates
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
