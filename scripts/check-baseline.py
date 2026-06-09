@@ -37,6 +37,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-make-gate-aliases.md",
     "docs/plans/2026-06-09-cancelled-touch-draft-reset.md",
     "docs/plans/2026-06-09-beginning-polygon-draft-reset.md",
+    "docs/plans/2026-06-09-plist-target-metadata.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -76,6 +77,7 @@ def main():
         if phrase not in gitignore:
             failures.append(f".gitignore must include {phrase}")
 
+    plists = {}
     for path in [
         "PlaceShapes/Info.plist",
         "PlaceShapesTests/Info.plist",
@@ -83,9 +85,22 @@ def main():
     ]:
         try:
             with (ROOT / path).open("rb") as handle:
-                plistlib.load(handle)
+                plists[path] = plistlib.load(handle)
         except Exception as error:
             failures.append(f"{path} must parse as a plist: {error}")
+    expected_package_types = {
+        "PlaceShapes/Info.plist": "FMWK",
+        "PlaceShapesTests/Info.plist": "BNDL",
+    }
+    for path, package_type in expected_package_types.items():
+        plist = plists.get(path)
+        if not plist:
+            continue
+        bundle_identifier = str(plist.get("CFBundleIdentifier", "")).strip()
+        if bundle_identifier != "$(PRODUCT_BUNDLE_IDENTIFIER)":
+            failures.append(f"{path} must use PRODUCT_BUNDLE_IDENTIFIER for CFBundleIdentifier")
+        if plist.get("CFBundlePackageType") != package_type:
+            failures.append(f"{path} must keep CFBundlePackageType={package_type}")
 
     for path in [
         "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
@@ -200,6 +215,8 @@ def main():
         "leaving edit mode",
         "finalized polygon drafts",
         "CocoaPods platform matches the iOS 10.1 deployment target",
+        "plist bundle identifiers",
+        "plist package types",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -232,6 +249,9 @@ def main():
     begin_draft_plan = read("docs/plans/2026-06-09-beginning-polygon-draft-reset.md")
     if "status: completed" not in begin_draft_plan or "beginPolygonDraft" not in begin_draft_plan:
         failures.append("beginning polygon draft reset plan must record completed status and verification")
+    plist_target_plan = read("docs/plans/2026-06-09-plist-target-metadata.md")
+    if "status: completed" not in plist_target_plan or "CFBundlePackageType" not in plist_target_plan:
+        failures.append("plist target metadata plan must record completed status and verification")
 
     if failures:
         for failure in failures:

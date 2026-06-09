@@ -7,6 +7,8 @@
 - Made cancelled touch callbacks clear stale polygon drafts even when edit mode
   has already changed.
 - Added stable Make aliases for lint, test, build, verify, and check gates.
+- Added static plist bundle identifier and package type checks for framework
+  and XCTest target metadata.
 
 ## 2026-06-08
 
