@@ -30,6 +30,7 @@ REQUIRED = [
     "docs/readme-overview.svg",
     PLAN,
     "docs/plans/2026-06-09-non-placeholder-xctest.md",
+    "docs/plans/2026-06-09-cancelled-polygon-drafts.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -110,6 +111,7 @@ def main():
         "MKMapViewDelegate",
         "MKPolygonRenderer",
         "shouldRenderPolygon(coordinateCount:",
+        "func cancelPolygonDraft()",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
     ]:
@@ -121,6 +123,8 @@ def main():
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 2))",
         "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))",
+        "testCancellingPolygonDraftClearsCoordinates",
+        "controller.cancelPolygonDraft()",
     ]:
         if phrase not in tests:
             failures.append(f"PlaceShapesTests.swift must include {phrase}")
@@ -155,6 +159,7 @@ def main():
         "Swift 3",
         "CocoaPods",
         "non-placeholder XCTest",
+        "cancelled touches",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -165,6 +170,9 @@ def main():
     test_plan = read("docs/plans/2026-06-09-non-placeholder-xctest.md")
     if "status: completed" not in test_plan or "testPolygonRenderingRejectsNegativeCoordinateCounts" not in test_plan:
         failures.append("XCTest plan must record completed status and verification")
+    cancel_plan = read("docs/plans/2026-06-09-cancelled-polygon-drafts.md")
+    if "status: completed" not in cancel_plan or "cancelPolygonDraft" not in cancel_plan:
+        failures.append("cancelled draft plan must record completed status and verification")
 
     if failures:
         for failure in failures:

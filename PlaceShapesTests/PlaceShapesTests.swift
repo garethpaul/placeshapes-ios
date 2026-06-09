@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import CoreLocation
 @testable import PlaceShapes
 
 class PlaceShapesTests: XCTestCase {
@@ -30,6 +31,17 @@ class PlaceShapesTests: XCTestCase {
 
     func testPolygonRenderingRejectsNegativeCoordinateCounts() {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))
+    }
+
+    func testCancellingPolygonDraftClearsCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        controller.cancelPolygonDraft()
+
+        XCTAssertEqual(controller.coordinates.count, 0)
     }
     
 }

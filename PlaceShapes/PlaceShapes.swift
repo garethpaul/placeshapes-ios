@@ -20,6 +20,10 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     static func shouldRenderPolygon(coordinateCount: Int) -> Bool {
         return coordinateCount >= 3
     }
+
+    func cancelPolygonDraft() {
+        coordinates.removeAll()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,7 +120,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         // If editing
         if isEditing {
-            // Do nothing
+            cancelPolygonDraft()
         }
     }
 }
