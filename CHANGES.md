@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added an explicit start-draft helper and test so new polygon drafts clear
+  stale coordinates before collecting touches.
 - Made cancelled touch callbacks clear stale polygon drafts even when edit mode
   has already changed.
 - Added stable Make aliases for lint, test, build, verify, and check gates.

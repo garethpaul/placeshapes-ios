@@ -28,6 +28,7 @@ Priority:
 - Avoid changing gesture behavior without a sample app check
 - Keep drawn coordinates local by default
 - Keep non-placeholder XCTest coverage for polygon creation rules
+- Keep starting polygon drafts from reusing stale coordinates
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes
 - Keep leaving edit mode from retaining polygon draft coordinates

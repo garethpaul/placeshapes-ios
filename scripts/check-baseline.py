@@ -36,6 +36,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-finalized-polygon-draft-clear.md",
     "docs/plans/2026-06-09-make-gate-aliases.md",
     "docs/plans/2026-06-09-cancelled-touch-draft-reset.md",
+    "docs/plans/2026-06-09-beginning-polygon-draft-reset.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -124,6 +125,7 @@ def main():
         "MKMapViewDelegate",
         "MKPolygonRenderer",
         "shouldRenderPolygon(coordinateCount:",
+        "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
         "func finalizePolygonDraft() -> MKPolygon?",
         "coordinates.count",
@@ -142,6 +144,8 @@ def main():
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 2))",
         "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))",
+        "testBeginningPolygonDraftClearsCoordinates",
+        "controller.beginPolygonDraft()",
         "testCancellingPolygonDraftClearsCoordinates",
         "controller.cancelPolygonDraft()",
         "testLeavingEditingClearsPolygonDraftCoordinates",
@@ -192,6 +196,7 @@ def main():
         "non-placeholder XCTest",
         "cancelled touches",
         "cancelled touch callbacks",
+        "starting polygon drafts",
         "leaving edit mode",
         "finalized polygon drafts",
         "CocoaPods platform matches the iOS 10.1 deployment target",
@@ -224,6 +229,9 @@ def main():
     touch_cancel_plan = read("docs/plans/2026-06-09-cancelled-touch-draft-reset.md")
     if "status: completed" not in touch_cancel_plan or "touchesCancelled" not in touch_cancel_plan:
         failures.append("cancelled touch draft reset plan must record completed status and verification")
+    begin_draft_plan = read("docs/plans/2026-06-09-beginning-polygon-draft-reset.md")
+    if "status: completed" not in begin_draft_plan or "beginPolygonDraft" not in begin_draft_plan:
+        failures.append("beginning polygon draft reset plan must record completed status and verification")
 
     if failures:
         for failure in failures:

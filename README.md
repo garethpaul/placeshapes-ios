@@ -67,6 +67,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
   polygon coordinate counts.
+- Starting polygon drafts clears any stale coordinates before collecting the
+  next touch path.
 - Cancelled touches clear in-progress polygon draft coordinates.
 - Cancelled touch callbacks clear stale polygon drafts even if edit mode has
   already changed.
@@ -112,6 +114,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   privacy-related docs.
 - Keep non-placeholder XCTest coverage in place when changing polygon creation
   rules.
+- Keep starting polygon drafts from reusing stale coordinates.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep cancelled touch callbacks clearing stale polygon drafts regardless of
   current edit mode.

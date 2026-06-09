@@ -21,6 +21,10 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         return coordinateCount >= 3
     }
 
+    func beginPolygonDraft() {
+        coordinates.removeAll()
+    }
+
     func cancelPolygonDraft() {
         coordinates.removeAll()
     }
@@ -82,7 +86,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         // If editing
         if isEditing {
             // Empty array
-            coordinates.removeAll()
+            beginPolygonDraft()
             
             // Convert touches to map coordinates
             for touch in touches {

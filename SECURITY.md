@@ -43,6 +43,8 @@ sharing behavior should include the code path and whether user consent is
 visible.
 Keep non-placeholder XCTest coverage around coordinate-count rules so malformed
 input remains predictable.
+Starting polygon drafts should clear stale coordinates before collecting the
+next touch path.
 Cancelled touches should clear in-progress polygon draft coordinates so stale
 points are not retained in the editing flow.
 Cancelled touch callbacks should clear stale polygon drafts even if edit mode

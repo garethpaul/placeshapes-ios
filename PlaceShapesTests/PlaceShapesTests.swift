@@ -33,6 +33,17 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))
     }
 
+    func testBeginningPolygonDraftClearsCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        controller.beginPolygonDraft()
+
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
     func testCancellingPolygonDraftClearsCoordinates() {
         let controller = PlaceShapes()
         controller.coordinates = [
