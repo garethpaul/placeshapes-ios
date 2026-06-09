@@ -35,6 +35,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-podfile-deployment-target.md",
     "docs/plans/2026-06-09-finalized-polygon-draft-clear.md",
     "docs/plans/2026-06-09-make-gate-aliases.md",
+    "docs/plans/2026-06-09-cancelled-touch-draft-reset.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -131,6 +132,7 @@ def main():
         "var draftCoordinates = coordinates",
         "mapView?.isUserInteractionEnabled",
         "cancelPolygonDraft()",
+        "touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {\n        cancelPolygonDraft()",
     ]:
         if phrase not in swift:
             failures.append(f"PlaceShapes.swift must include {phrase}")
@@ -148,6 +150,8 @@ def main():
         "XCTAssertNil(controller.finalizePolygonDraft())",
         "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
+        "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
+        "controller.touchesCancelled(Set<UITouch>(), with: nil)",
     ]:
         if phrase not in tests:
             failures.append(f"PlaceShapesTests.swift must include {phrase}")
@@ -187,6 +191,7 @@ def main():
         "CocoaPods",
         "non-placeholder XCTest",
         "cancelled touches",
+        "cancelled touch callbacks",
         "leaving edit mode",
         "finalized polygon drafts",
         "CocoaPods platform matches the iOS 10.1 deployment target",
@@ -216,6 +221,9 @@ def main():
     for phrase in ["status: completed", "make lint", "make test", "make build", "make verify"]:
         if phrase not in make_gates_plan:
             failures.append(f"make gate alias plan must record {phrase}")
+    touch_cancel_plan = read("docs/plans/2026-06-09-cancelled-touch-draft-reset.md")
+    if "status: completed" not in touch_cancel_plan or "touchesCancelled" not in touch_cancel_plan:
+        failures.append("cancelled touch draft reset plan must record completed status and verification")
 
     if failures:
         for failure in failures:

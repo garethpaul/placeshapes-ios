@@ -68,6 +68,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
   polygon coordinate counts.
 - Cancelled touches clear in-progress polygon draft coordinates.
+- Cancelled touch callbacks clear stale polygon drafts even if edit mode has
+  already changed.
 - Leaving edit mode also clears in-progress polygon draft coordinates before
   the map returns to normal interaction.
 - Finalized polygon drafts clear the raw coordinate buffer whether the draft is
@@ -111,6 +113,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Keep non-placeholder XCTest coverage in place when changing polygon creation
   rules.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
+- Keep cancelled touch callbacks clearing stale polygon drafts regardless of
+  current edit mode.
 - Keep leaving edit mode from retaining stale polygon draft coordinates.
 - Keep finalized polygon drafts from retaining stale raw coordinate buffers.
 - Keep the CocoaPods platform aligned with the Xcode iOS deployment target.

@@ -77,5 +77,16 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertNotNil(controller.finalizePolygonDraft())
         XCTAssertEqual(controller.coordinates.count, 0)
     }
+
+    func testCancelledTouchesClearDraftCoordinatesOutsideEditing() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        controller.touchesCancelled(Set<UITouch>(), with: nil)
+
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
     
 }

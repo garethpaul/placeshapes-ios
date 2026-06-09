@@ -130,9 +130,6 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // If editing
-        if isEditing {
-            cancelPolygonDraft()
-        }
+        cancelPolygonDraft()
     }
 }
