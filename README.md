@@ -65,6 +65,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
   polygon coordinate counts.
 - Cancelled touches clear in-progress polygon draft coordinates.
+- Leaving edit mode also clears in-progress polygon draft coordinates before
+  the map returns to normal interaction.
 
 ## Testing and Verification
 
@@ -96,6 +98,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Keep non-placeholder XCTest coverage in place when changing polygon creation
   rules.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
+- Keep leaving edit mode from retaining stale polygon draft coordinates.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-baseline.md` for
   the current static baseline.

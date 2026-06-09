@@ -45,6 +45,8 @@ Keep non-placeholder XCTest coverage around coordinate-count rules so malformed
 input remains predictable.
 Cancelled touches should clear in-progress polygon draft coordinates so stale
 points are not retained in the editing flow.
+Leaving edit mode should also clear in-progress polygon draft coordinates before
+normal map interaction resumes.
 
 ## Dependency and Supply Chain Security
 

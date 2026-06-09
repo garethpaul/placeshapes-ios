@@ -31,6 +31,7 @@ REQUIRED = [
     PLAN,
     "docs/plans/2026-06-09-non-placeholder-xctest.md",
     "docs/plans/2026-06-09-cancelled-polygon-drafts.md",
+    "docs/plans/2026-06-09-edit-mode-draft-reset.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -114,6 +115,8 @@ def main():
         "func cancelPolygonDraft()",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
+        "mapView?.isUserInteractionEnabled",
+        "cancelPolygonDraft()",
     ]:
         if phrase not in swift:
             failures.append(f"PlaceShapes.swift must include {phrase}")
@@ -125,6 +128,8 @@ def main():
         "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))",
         "testCancellingPolygonDraftClearsCoordinates",
         "controller.cancelPolygonDraft()",
+        "testLeavingEditingClearsPolygonDraftCoordinates",
+        "controller.setEditing(false, animated: false)",
     ]:
         if phrase not in tests:
             failures.append(f"PlaceShapesTests.swift must include {phrase}")
@@ -160,6 +165,7 @@ def main():
         "CocoaPods",
         "non-placeholder XCTest",
         "cancelled touches",
+        "leaving edit mode",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -173,6 +179,9 @@ def main():
     cancel_plan = read("docs/plans/2026-06-09-cancelled-polygon-drafts.md")
     if "status: completed" not in cancel_plan or "cancelPolygonDraft" not in cancel_plan:
         failures.append("cancelled draft plan must record completed status and verification")
+    edit_plan = read("docs/plans/2026-06-09-edit-mode-draft-reset.md")
+    if "status: completed" not in edit_plan or "setEditing(false" not in edit_plan:
+        failures.append("edit mode draft reset plan must record completed status and verification")
 
     if failures:
         for failure in failures:

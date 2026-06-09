@@ -10,6 +10,7 @@
 - Replaced generated placeholder XCTest methods and covered negative coordinate
   counts.
 - Cleared in-progress polygon coordinates when touch input is cancelled.
+- Cleared in-progress polygon coordinates when leaving edit mode.
 - Documented that map coordinates stay local by default and that future export,
   upload, or analytics behavior must be explicit.
 - Expanded local ignore rules for environment files, logs, temporary files,

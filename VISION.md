@@ -28,6 +28,7 @@ Priority:
 - Keep drawn coordinates local by default
 - Keep non-placeholder XCTest coverage for polygon creation rules
 - Keep cancelled touches from retaining polygon draft coordinates
+- Keep leaving edit mode from retaining polygon draft coordinates
 
 Next priorities:
 

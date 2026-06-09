@@ -57,11 +57,12 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         
         if editing {
             // Disable the map from moving
-            mapView.isUserInteractionEnabled = false
+            mapView?.isUserInteractionEnabled = false
         }
         else {
+            cancelPolygonDraft()
             // Enable the map to move
-            mapView.isUserInteractionEnabled = true
+            mapView?.isUserInteractionEnabled = true
         }
     }
     
