@@ -51,6 +51,7 @@ Additional scan context:
 git clone https://github.com/garethpaul/placeshapes-ios.git
 cd placeshapes-ios
 pod install
+make check
 ```
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
@@ -75,8 +76,15 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - `make check`
+- `make lint`
+- `make test`
+- `make build`
+- `make verify`
 - `python3 scripts/check-baseline.py`
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination on a macOS machine with the matching Apple toolchain
+
+The Make lint, test, build, verify, and check targets all run the static
+baseline on hosts without the matching legacy Xcode toolchain.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -97,14 +105,17 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
-- Run `make check` before changing project metadata, MapKit drawing behavior,
-  or privacy-related docs.
+- Run `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  before changing project metadata, MapKit drawing behavior, or
+  privacy-related docs.
 - Keep non-placeholder XCTest coverage in place when changing polygon creation
   rules.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep leaving edit mode from retaining stale polygon draft coordinates.
 - Keep finalized polygon drafts from retaining stale raw coordinate buffers.
 - Keep the CocoaPods platform aligned with the Xcode iOS deployment target.
+- See `docs/plans/2026-06-09-make-gate-aliases.md` for the local Make gate
+  aliases.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-baseline.md` for
   the current static baseline.

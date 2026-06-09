@@ -34,6 +34,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-edit-mode-draft-reset.md",
     "docs/plans/2026-06-09-podfile-deployment-target.md",
     "docs/plans/2026-06-09-finalized-polygon-draft-clear.md",
+    "docs/plans/2026-06-09-make-gate-aliases.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -50,8 +51,16 @@ def main():
             failures.append(f"required file missing: {path}")
 
     makefile = read("Makefile")
-    if "python3 scripts/check-baseline.py" not in makefile:
-        failures.append("Makefile must expose the static checker")
+    for phrase in [
+        "python3 scripts/check-baseline.py",
+        "check: verify",
+        "verify: static-check",
+        "lint: static-check",
+        "test: static-check",
+        "build: static-check",
+    ]:
+        if phrase not in makefile:
+            failures.append(f"Makefile must include {phrase}")
 
     gitignore = read(".gitignore")
     for phrase in [
@@ -167,6 +176,10 @@ def main():
     docs = "\n".join(read(path) for path in ["README.md", "SECURITY.md", "VISION.md"])
     for phrase in [
         "make check",
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
         "MapKit",
         "local by default",
         "coordinates",
@@ -199,6 +212,10 @@ def main():
     finalized_plan = read("docs/plans/2026-06-09-finalized-polygon-draft-clear.md")
     if "status: completed" not in finalized_plan or "finalizePolygonDraft" not in finalized_plan:
         failures.append("finalized polygon draft plan must record completed status and verification")
+    make_gates_plan = read("docs/plans/2026-06-09-make-gate-aliases.md")
+    for phrase in ["status: completed", "make lint", "make test", "make build", "make verify"]:
+        if phrase not in make_gates_plan:
+            failures.append(f"make gate alias plan must record {phrase}")
 
     if failures:
         for failure in failures:

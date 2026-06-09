@@ -13,9 +13,10 @@ shown with a custom renderer.
 The goal is to keep the drawing behavior easy to understand while making the
 library and app integration path clearer.
 
-Current baseline: `make check` performs static verification of the Xcode
-metadata, plists, MapKit drawing surfaces, and local-coordinate privacy
-guardrails without requiring Xcode.
+Current baseline: `make lint`, `make test`, `make build`, `make verify`, and
+`make check` perform static verification of the Xcode metadata, plists, MapKit
+drawing surfaces, and local-coordinate privacy guardrails without requiring
+Xcode.
 
 The current focus is:
 
@@ -31,6 +32,7 @@ Priority:
 - Keep leaving edit mode from retaining polygon draft coordinates
 - Keep finalized polygon drafts from retaining raw coordinate buffers
 - Keep the CocoaPods platform matched to the Xcode iOS deployment target
+- Keep standard Make gate aliases available for local static verification
 
 Next priorities:
 
@@ -48,7 +50,8 @@ Contribution rules:
 - Include simulator notes for interaction changes.
 - Keep public API changes small and documented.
 - Do not introduce network or location upload behavior.
-- Keep `make check` passing for metadata and local-coordinate guardrails.
+- Keep `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  passing for metadata and local-coordinate guardrails.
 
 ## Security And Responsible Use
 
