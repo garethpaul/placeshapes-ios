@@ -7,6 +7,8 @@
 - Added a small polygon guard so fewer than three touch coordinates do not
   replace the current map overlay.
 - Added XCTest coverage for the minimum coordinate rule.
+- Replaced generated placeholder XCTest methods and covered negative coordinate
+  counts.
 - Documented that map coordinates stay local by default and that future export,
   upload, or analytics behavior must be explicit.
 - Expanded local ignore rules for environment files, logs, temporary files,

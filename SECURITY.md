@@ -41,6 +41,8 @@ Map drawings can represent private homes, workplaces, routes, or sensitive
 places. Reports about coordinate export, persistence, upload, analytics, or
 sharing behavior should include the code path and whether user consent is
 visible.
+Keep non-placeholder XCTest coverage around coordinate-count rules so malformed
+input remains predictable.
 
 ## Dependency and Supply Chain Security
 

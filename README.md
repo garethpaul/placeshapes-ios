@@ -62,6 +62,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   mode collects touch coordinates and renders the resulting `MKPolygon`.
 - Keep coordinates local unless a future change explicitly documents export,
   sharing, or upload behavior.
+- The test target keeps non-placeholder XCTest coverage for minimum and invalid
+  polygon coordinate counts.
 
 ## Testing and Verification
 
@@ -90,6 +92,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Run `make check` before changing project metadata, MapKit drawing behavior,
   or privacy-related docs.
+- Keep non-placeholder XCTest coverage in place when changing polygon creation
+  rules.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-baseline.md` for
   the current static baseline.

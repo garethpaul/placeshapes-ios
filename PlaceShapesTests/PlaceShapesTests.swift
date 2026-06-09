@@ -21,23 +21,15 @@ class PlaceShapesTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-
     func testPolygonRenderingRequiresAtLeastThreeCoordinates() {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 0))
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 1))
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 2))
         XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testPolygonRenderingRejectsNegativeCoordinateCounts() {
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))
     }
     
 }

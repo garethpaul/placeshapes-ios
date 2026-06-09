@@ -26,12 +26,14 @@ Priority:
 - Maintain the README example and screenshot context
 - Avoid changing gesture behavior without a sample app check
 - Keep drawn coordinates local by default
+- Keep non-placeholder XCTest coverage for polygon creation rules
 
 Next priorities:
 
 - Document supported Xcode, Swift, and iOS versions
 - Add a small sample app flow that demonstrates importing `PlaceShapes`
 - Add tests or manual verification notes for polygon creation
+- Add more invalid-coordinate fixtures for drawing helpers
 - Clarify how callers can read, reset, and style drawn shapes
 - Add Xcode/simulator verification notes when the matching Apple toolchain is
   available
