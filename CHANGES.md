@@ -11,6 +11,7 @@
   counts.
 - Cleared in-progress polygon coordinates when touch input is cancelled.
 - Cleared in-progress polygon coordinates when leaving edit mode.
+- Aligned the CocoaPods platform with the Xcode iOS 10.1 deployment target.
 - Documented that map coordinates stay local by default and that future export,
   upload, or analytics behavior must be explicit.
 - Expanded local ignore rules for environment files, logs, temporary files,

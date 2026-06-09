@@ -60,6 +60,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Open `PlaceShapes.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
 - Use `PlaceShapes/PlaceShapes.swift` as the drawing behavior reference: edit
   mode collects touch coordinates and renders the resulting `MKPolygon`.
+- The CocoaPods platform matches the iOS 10.1 deployment target declared by
+  the Xcode project.
 - Keep coordinates local unless a future change explicitly documents export,
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
@@ -99,6 +101,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   rules.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep leaving edit mode from retaining stale polygon draft coordinates.
+- Keep the CocoaPods platform aligned with the Xcode iOS deployment target.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-baseline.md` for
   the current static baseline.

@@ -32,6 +32,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-non-placeholder-xctest.md",
     "docs/plans/2026-06-09-cancelled-polygon-drafts.md",
     "docs/plans/2026-06-09-edit-mode-draft-reset.md",
+    "docs/plans/2026-06-09-podfile-deployment-target.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -88,7 +89,7 @@ def main():
         failures.append("screenshots/001.png must remain a PNG image")
 
     podfile = read("Podfile")
-    for phrase in ["target 'PlaceShapes'", "target 'PlaceShapesTests'", "use_frameworks!"]:
+    for phrase in ["platform :ios, '10.1'", "target 'PlaceShapes'", "target 'PlaceShapesTests'", "use_frameworks!"]:
         if phrase not in podfile:
             failures.append(f"Podfile must include {phrase}")
     if re.search(r"^\s*pod\s+['\"]", podfile, re.MULTILINE):
@@ -166,6 +167,7 @@ def main():
         "non-placeholder XCTest",
         "cancelled touches",
         "leaving edit mode",
+        "CocoaPods platform matches the iOS 10.1 deployment target",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -182,6 +184,9 @@ def main():
     edit_plan = read("docs/plans/2026-06-09-edit-mode-draft-reset.md")
     if "status: completed" not in edit_plan or "setEditing(false" not in edit_plan:
         failures.append("edit mode draft reset plan must record completed status and verification")
+    podfile_plan = read("docs/plans/2026-06-09-podfile-deployment-target.md")
+    if "status: completed" not in podfile_plan or "platform :ios, '10.1'" not in podfile_plan:
+        failures.append("Podfile deployment target plan must record completed status and verification")
 
     if failures:
         for failure in failures:
