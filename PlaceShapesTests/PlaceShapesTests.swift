@@ -54,5 +54,28 @@ class PlaceShapesTests: XCTestCase {
 
         XCTAssertEqual(controller.coordinates.count, 0)
     }
+
+    func testInvalidPolygonFinalizationClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+        ]
+
+        XCTAssertNil(controller.finalizePolygonDraft())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
+    func testSuccessfulPolygonFinalizationClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertNotNil(controller.finalizePolygonDraft())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
     
 }

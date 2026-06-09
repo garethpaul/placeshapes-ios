@@ -69,6 +69,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Cancelled touches clear in-progress polygon draft coordinates.
 - Leaving edit mode also clears in-progress polygon draft coordinates before
   the map returns to normal interaction.
+- Finalized polygon drafts clear the raw coordinate buffer whether the draft is
+  too short to render or successfully becomes an `MKPolygon`.
 
 ## Testing and Verification
 
@@ -101,6 +103,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   rules.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep leaving edit mode from retaining stale polygon draft coordinates.
+- Keep finalized polygon drafts from retaining stale raw coordinate buffers.
 - Keep the CocoaPods platform aligned with the Xcode iOS deployment target.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `CHANGES.md` and `docs/plans/2026-06-08-placeshapes-baseline.md` for

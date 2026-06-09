@@ -33,6 +33,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-cancelled-polygon-drafts.md",
     "docs/plans/2026-06-09-edit-mode-draft-reset.md",
     "docs/plans/2026-06-09-podfile-deployment-target.md",
+    "docs/plans/2026-06-09-finalized-polygon-draft-clear.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -114,8 +115,11 @@ def main():
         "MKPolygonRenderer",
         "shouldRenderPolygon(coordinateCount:",
         "func cancelPolygonDraft()",
+        "func finalizePolygonDraft() -> MKPolygon?",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
+        "guard let nextPolygon = finalizePolygonDraft()",
+        "var draftCoordinates = coordinates",
         "mapView?.isUserInteractionEnabled",
         "cancelPolygonDraft()",
     ]:
@@ -131,6 +135,10 @@ def main():
         "controller.cancelPolygonDraft()",
         "testLeavingEditingClearsPolygonDraftCoordinates",
         "controller.setEditing(false, animated: false)",
+        "testInvalidPolygonFinalizationClearsDraftCoordinates",
+        "XCTAssertNil(controller.finalizePolygonDraft())",
+        "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
+        "XCTAssertNotNil(controller.finalizePolygonDraft())",
     ]:
         if phrase not in tests:
             failures.append(f"PlaceShapesTests.swift must include {phrase}")
@@ -167,6 +175,7 @@ def main():
         "non-placeholder XCTest",
         "cancelled touches",
         "leaving edit mode",
+        "finalized polygon drafts",
         "CocoaPods platform matches the iOS 10.1 deployment target",
     ]:
         if phrase.lower() not in docs.lower():
@@ -187,6 +196,9 @@ def main():
     podfile_plan = read("docs/plans/2026-06-09-podfile-deployment-target.md")
     if "status: completed" not in podfile_plan or "platform :ios, '10.1'" not in podfile_plan:
         failures.append("Podfile deployment target plan must record completed status and verification")
+    finalized_plan = read("docs/plans/2026-06-09-finalized-polygon-draft-clear.md")
+    if "status: completed" not in finalized_plan or "finalizePolygonDraft" not in finalized_plan:
+        failures.append("finalized polygon draft plan must record completed status and verification")
 
     if failures:
         for failure in failures:

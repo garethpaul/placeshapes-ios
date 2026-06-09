@@ -29,6 +29,7 @@ Priority:
 - Keep non-placeholder XCTest coverage for polygon creation rules
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep leaving edit mode from retaining polygon draft coordinates
+- Keep finalized polygon drafts from retaining raw coordinate buffers
 - Keep the CocoaPods platform matched to the Xcode iOS deployment target
 
 Next priorities:

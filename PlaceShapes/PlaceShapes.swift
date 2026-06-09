@@ -24,6 +24,17 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     func cancelPolygonDraft() {
         coordinates.removeAll()
     }
+
+    func finalizePolygonDraft() -> MKPolygon? {
+        guard PlaceShapes.shouldRenderPolygon(coordinateCount: coordinates.count) else {
+            cancelPolygonDraft()
+            return nil
+        }
+
+        var draftCoordinates = coordinates
+        cancelPolygonDraft()
+        return MKPolygon(coordinates: &draftCoordinates, count: draftCoordinates.count)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,7 +114,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 coordinates.append(coordinate)
             }
 
-            guard PlaceShapes.shouldRenderPolygon(coordinateCount: coordinates.count) else {
+            guard let nextPolygon = finalizePolygonDraft() else {
                 return
             }
             
@@ -111,7 +122,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             mapView.remove(polygon)
             
             // Create new polygon
-            polygon = MKPolygon(coordinates: &coordinates, count: coordinates.count)
+            polygon = nextPolygon
             
             // Add polygon to map
             mapView.add(polygon)

@@ -47,6 +47,9 @@ Cancelled touches should clear in-progress polygon draft coordinates so stale
 points are not retained in the editing flow.
 Leaving edit mode should also clear in-progress polygon draft coordinates before
 normal map interaction resumes.
+Finalized polygon drafts should clear the raw coordinate buffer after invalid
+or successful touch-end handling so private place data is not retained longer
+than needed.
 Keep the CocoaPods platform matched to the Xcode iOS deployment target so
 dependency integration does not silently target a different OS floor.
 
