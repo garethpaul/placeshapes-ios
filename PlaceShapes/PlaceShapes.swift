@@ -42,7 +42,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        mapView.delegate = self
+        mapView?.delegate = self
         // Add an edit button to the navigation bar
         navigationItem.rightBarButtonItem = self.editButtonItem
     }

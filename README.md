@@ -65,6 +65,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the Xcode project.
 - Framework and test plist bundle identifiers use `PRODUCT_BUNDLE_IDENTIFIER`,
   and plist package types stay explicit for the framework and XCTest bundle.
+- The map view delegate outlet assignment tolerates an unconnected `mapView`
+  during scaffold checks.
 - Keep coordinates local unless a future change explicitly documents export,
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
@@ -125,6 +127,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Keep the CocoaPods platform aligned with the Xcode iOS deployment target.
 - Keep plist bundle identifiers and plist package types explicit when editing
   framework or test target metadata.
+- Keep the map view delegate outlet assignment safe for unconnected scaffold
+  instances.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for the local Make gate
   aliases.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.

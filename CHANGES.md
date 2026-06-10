@@ -10,6 +10,11 @@
 - Added static plist bundle identifier and package type checks for framework
   and XCTest target metadata.
 
+## 2026-06-10
+
+- Guarded map view delegate outlet setup so unconnected scaffold instances do
+  not force-touch the `mapView` outlet.
+
 ## 2026-06-08
 
 - Added `make check` with static project, plist, scheme, screenshot, and

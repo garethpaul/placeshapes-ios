@@ -33,6 +33,7 @@ Priority:
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes
 - Keep leaving edit mode from retaining polygon draft coordinates
 - Keep finalized polygon drafts from retaining raw coordinate buffers
+- Keep map view delegate outlet setup safe for unconnected scaffold instances
 - Keep the CocoaPods platform matched to the Xcode iOS deployment target
 - Keep plist bundle identifiers and plist package types explicit for targets
 - Keep standard Make gate aliases available for local static verification

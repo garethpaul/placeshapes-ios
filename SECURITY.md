@@ -54,6 +54,8 @@ normal map interaction resumes.
 Finalized polygon drafts should clear the raw coordinate buffer after invalid
 or successful touch-end handling so private place data is not retained longer
 than needed.
+Map view delegate outlet setup should tolerate unconnected scaffold instances
+used by tests or static review.
 Keep the CocoaPods platform matched to the Xcode iOS deployment target so
 dependency integration does not silently target a different OS floor.
 Keep plist bundle identifiers and plist package types explicit so framework and

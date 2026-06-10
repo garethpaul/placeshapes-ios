@@ -38,6 +38,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-cancelled-touch-draft-reset.md",
     "docs/plans/2026-06-09-beginning-polygon-draft-reset.md",
     "docs/plans/2026-06-09-plist-target-metadata.md",
+    "docs/plans/2026-06-10-map-view-delegate-outlet.md",
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -143,6 +144,7 @@ def main():
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
         "func finalizePolygonDraft() -> MKPolygon?",
+        "mapView?.delegate = self",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
         "guard let nextPolygon = finalizePolygonDraft()",
@@ -217,6 +219,7 @@ def main():
         "CocoaPods platform matches the iOS 10.1 deployment target",
         "plist bundle identifiers",
         "plist package types",
+        "map view delegate outlet",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -252,6 +255,12 @@ def main():
     plist_target_plan = read("docs/plans/2026-06-09-plist-target-metadata.md")
     if "status: completed" not in plist_target_plan or "CFBundlePackageType" not in plist_target_plan:
         failures.append("plist target metadata plan must record completed status and verification")
+    map_view_delegate_plan = read("docs/plans/2026-06-10-map-view-delegate-outlet.md")
+    if (
+        "status: completed" not in map_view_delegate_plan
+        or "map view delegate outlet" not in map_view_delegate_plan
+    ):
+        failures.append("map view delegate outlet plan must record completed status and verification")
 
     if failures:
         for failure in failures:
