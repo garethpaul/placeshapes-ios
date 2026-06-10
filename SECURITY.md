@@ -56,6 +56,8 @@ or successful touch-end handling so private place data is not retained longer
 than needed.
 Map view delegate outlet setup should tolerate unconnected scaffold instances
 used by tests or static review.
+The touch input map outlet should clear partial coordinates and return safely
+when the map view is unavailable.
 Keep the CocoaPods platform matched to the Xcode iOS deployment target so
 dependency integration does not silently target a different OS floor.
 Keep plist bundle identifiers and plist package types explicit so framework and

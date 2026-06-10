@@ -16,6 +16,8 @@
   MapKit/CocoaPods project.
 - Guarded map view delegate outlet setup so unconnected scaffold instances do
   not force-touch the `mapView` outlet.
+- Guarded the touch input map outlet and cleared partial polygon drafts when the
+  map is unavailable.
 
 ## 2026-06-08
 

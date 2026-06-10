@@ -67,6 +67,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   and plist package types stay explicit for the framework and XCTest bundle.
 - The map view delegate outlet assignment tolerates an unconnected `mapView`
   during scaffold checks.
+- The touch input map outlet is guarded before coordinate conversion, and an
+  unavailable map clears any partial polygon draft.
 - Keep coordinates local unless a future change explicitly documents export,
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid

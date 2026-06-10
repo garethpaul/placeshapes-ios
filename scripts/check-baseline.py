@@ -41,6 +41,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-beginning-polygon-draft-reset.md",
     "docs/plans/2026-06-09-plist-target-metadata.md",
     "docs/plans/2026-06-10-map-view-delegate-outlet.md",
+    "docs/plans/2026-06-10-touch-input-map-outlet.md",
     HOSTED_VALIDATION_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
@@ -160,11 +161,16 @@ def main():
         "shouldRenderPolygon(coordinateCount:",
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
+        "func mapViewForTouchInput() -> MKMapView?",
+        "guard let touchMapView = mapView else",
+        "guard let touchMapView = mapView else {\n            cancelPolygonDraft()\n            return nil",
         "func finalizePolygonDraft() -> MKPolygon?",
         "mapView?.delegate = self",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
         "guard let nextPolygon = finalizePolygonDraft()",
+        "touchMapView.remove(polygon)",
+        "touchMapView.add(polygon)",
         "var draftCoordinates = coordinates",
         "mapView?.isUserInteractionEnabled",
         "cancelPolygonDraft()",
@@ -172,6 +178,8 @@ def main():
     ]:
         if phrase not in swift:
             failures.append(f"PlaceShapes.swift must include {phrase}")
+    if swift.count("guard let touchMapView = mapViewForTouchInput() else") != 3:
+        failures.append("all three active touch callbacks must guard the map view outlet")
     for phrase in [
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
@@ -190,6 +198,8 @@ def main():
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
+        "testUnavailableTouchInputMapClearsDraftCoordinates",
+        "XCTAssertNil(controller.mapViewForTouchInput())",
     ]:
         if phrase not in tests:
             failures.append(f"PlaceShapesTests.swift must include {phrase}")
@@ -237,6 +247,7 @@ def main():
         "plist bundle identifiers",
         "plist package types",
         "map view delegate outlet",
+        "touch input map outlet",
         "hosted macOS",
         "structural validation",
     ]:
@@ -280,6 +291,9 @@ def main():
         or "map view delegate outlet" not in map_view_delegate_plan
     ):
         failures.append("map view delegate outlet plan must record completed status and verification")
+    touch_input_map_plan = read("docs/plans/2026-06-10-touch-input-map-outlet.md")
+    if "status: completed" not in touch_input_map_plan or "mapViewForTouchInput" not in touch_input_map_plan:
+        failures.append("touch input map outlet plan must record completed status and verification")
     hosted_validation_plan = read(HOSTED_VALIDATION_PLAN)
     if "status: completed" not in hosted_validation_plan or "make check" not in hosted_validation_plan:
         failures.append("hosted structural validation plan must record completed status and verification")

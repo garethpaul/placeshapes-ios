@@ -29,6 +29,14 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         coordinates.removeAll()
     }
 
+    func mapViewForTouchInput() -> MKMapView? {
+        guard let touchMapView = mapView else {
+            cancelPolygonDraft()
+            return nil
+        }
+        return touchMapView
+    }
+
     func finalizePolygonDraft() -> MKPolygon? {
         guard PlaceShapes.shouldRenderPolygon(coordinateCount: coordinates.count) else {
             cancelPolygonDraft()
@@ -85,12 +93,15 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         // If editing
         if isEditing {
+            guard let touchMapView = mapViewForTouchInput() else {
+                return
+            }
             // Empty array
             beginPolygonDraft()
             
             // Convert touches to map coordinates
             for touch in touches {
-                let coordinate = mapView.convert(touch.location(in: mapView), toCoordinateFrom: mapView)
+                let coordinate = touchMapView.convert(touch.location(in: touchMapView), toCoordinateFrom: touchMapView)
                 coordinates.append(coordinate)
             }
         }
@@ -99,10 +110,13 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         // If editing
         if isEditing {
+            guard let touchMapView = mapViewForTouchInput() else {
+                return
+            }
             // Convert touches to map coordinates
             for touch in touches {
                 // Use this method to convert a CGPoint to CLLocationCoordinate2D
-                let coordinate = mapView.convert(touch.location(in: mapView), toCoordinateFrom: mapView)
+                let coordinate = touchMapView.convert(touch.location(in: touchMapView), toCoordinateFrom: touchMapView)
                 // Add the coordinate to the array
                 coordinates.append(coordinate)
             }
@@ -112,9 +126,12 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         // If editing
         if isEditing {
+            guard let touchMapView = mapViewForTouchInput() else {
+                return
+            }
             // Convert touches to map coordinates
             for touch in touches {
-                let coordinate = mapView.convert(touch.location(in: mapView), toCoordinateFrom: mapView)
+                let coordinate = touchMapView.convert(touch.location(in: touchMapView), toCoordinateFrom: touchMapView)
                 coordinates.append(coordinate)
             }
 
@@ -123,13 +140,13 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             }
             
             // Remove existing polygon
-            mapView.remove(polygon)
+            touchMapView.remove(polygon)
             
             // Create new polygon
             polygon = nextPolygon
             
             // Add polygon to map
-            mapView.add(polygon)
+            touchMapView.add(polygon)
         }
     }
     
