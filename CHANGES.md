@@ -12,6 +12,8 @@
 
 ## 2026-06-10
 
+- Added pinned, read-only hosted macOS structural validation for the legacy
+  MapKit/CocoaPods project.
 - Guarded map view delegate outlet setup so unconnected scaffold instances do
   not force-touch the `mapView` outlet.
 

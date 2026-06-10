@@ -68,6 +68,8 @@ Dependency updates should come from trusted package managers and should keep loc
 Run `make lint`, `make test`, `make build`, `make verify`, and `make check`
 before changing project metadata, MapKit drawing behavior, privacy docs, or
 CocoaPods configuration.
+Pinned, read-only hosted macOS structural validation runs without credentials,
+pod installation, signing, network calls, or location-service access.
 
 ## Safe Research Guidelines
 

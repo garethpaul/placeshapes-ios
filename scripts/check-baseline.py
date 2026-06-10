@@ -10,7 +10,9 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
+HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
 REQUIRED = [
+    ".github/workflows/check.yml",
     ".gitignore",
     "CHANGES.md",
     "Makefile",
@@ -39,6 +41,7 @@ REQUIRED = [
     "docs/plans/2026-06-09-beginning-polygon-draft-reset.md",
     "docs/plans/2026-06-09-plist-target-metadata.md",
     "docs/plans/2026-06-10-map-view-delegate-outlet.md",
+    HOSTED_VALIDATION_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -65,6 +68,20 @@ def main():
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
+
+    workflow = read(".github/workflows/check.yml")
+    for expected in [
+        "permissions:\n  contents: read",
+        "cancel-in-progress: true",
+        "runs-on: macos-15",
+        "timeout-minutes: 10",
+        "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10",
+        "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405",
+        'python-version: "3.12"',
+        "run: make check",
+    ]:
+        if expected not in workflow:
+            failures.append(f"Check workflow must keep {expected}")
 
     gitignore = read(".gitignore")
     for phrase in [
@@ -220,6 +237,8 @@ def main():
         "plist bundle identifiers",
         "plist package types",
         "map view delegate outlet",
+        "hosted macOS",
+        "structural validation",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -261,6 +280,9 @@ def main():
         or "map view delegate outlet" not in map_view_delegate_plan
     ):
         failures.append("map view delegate outlet plan must record completed status and verification")
+    hosted_validation_plan = read(HOSTED_VALIDATION_PLAN)
+    if "status: completed" not in hosted_validation_plan or "make check" not in hosted_validation_plan:
+        failures.append("hosted structural validation plan must record completed status and verification")
 
     if failures:
         for failure in failures:
