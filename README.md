@@ -67,6 +67,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   and plist package types stay explicit for the framework and XCTest bundle.
 - The map view delegate outlet assignment tolerates an unconnected `mapView`
   during scaffold checks.
+- The touch input map outlet is guarded before coordinate conversion, and an
+  unavailable map clears any partial polygon draft.
 - Keep coordinates local unless a future change explicitly documents export,
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
@@ -93,6 +95,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 The Make lint, test, build, verify, and check targets all run the static
 baseline on hosts without the matching legacy Xcode toolchain.
+Pinned hosted macOS structural validation runs the same `make check` contract
+on Python 3.12 without installing pods, signing, or invoking location services.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

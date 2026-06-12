@@ -10,7 +10,10 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
+HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
 REQUIRED = [
+    ".github/CODEOWNERS",
+    ".github/workflows/check.yml",
     ".gitignore",
     "CHANGES.md",
     "Makefile",
@@ -39,6 +42,8 @@ REQUIRED = [
     "docs/plans/2026-06-09-beginning-polygon-draft-reset.md",
     "docs/plans/2026-06-09-plist-target-metadata.md",
     "docs/plans/2026-06-10-map-view-delegate-outlet.md",
+    "docs/plans/2026-06-10-touch-input-map-outlet.md",
+    HOSTED_VALIDATION_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -65,6 +70,37 @@ def main():
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
+
+    workflow = read(".github/workflows/check.yml")
+    codeowners = read(".github/CODEOWNERS")
+    for expected in [
+        "permissions:\n  contents: read",
+        "cancel-in-progress: true",
+        "runs-on: macos-15",
+        "timeout-minutes: 10",
+        "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10",
+        "persist-credentials: false",
+        "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405",
+        'python-version: "3.12"',
+        "run: make check",
+    ]:
+        if expected not in workflow:
+            failures.append(f"Check workflow must keep {expected}")
+    if workflow.count("actions/checkout@") != 1:
+        failures.append("Check workflow must use exactly one checkout action")
+    if workflow.count("persist-credentials:") != 1:
+        failures.append("Check workflow must set checkout credential persistence exactly once")
+    if workflow.count("persist-credentials: false") != 1:
+        failures.append("Check workflow must disable checkout credential persistence")
+    workflow_files = sorted(
+        str(path.relative_to(ROOT))
+        for path in (ROOT / ".github/workflows").rglob("*")
+        if path.is_file()
+    )
+    if workflow_files != [".github/workflows/check.yml"]:
+        failures.append("check.yml must be the repository's only hosted workflow")
+    if codeowners.strip() != "* @garethpaul":
+        failures.append("CODEOWNERS must assign the repository to @garethpaul")
 
     gitignore = read(".gitignore")
     for phrase in [
@@ -143,11 +179,16 @@ def main():
         "shouldRenderPolygon(coordinateCount:",
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
+        "func mapViewForTouchInput() -> MKMapView?",
+        "guard let touchMapView = mapView else",
+        "guard let touchMapView = mapView else {\n            cancelPolygonDraft()\n            return nil",
         "func finalizePolygonDraft() -> MKPolygon?",
         "mapView?.delegate = self",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
         "guard let nextPolygon = finalizePolygonDraft()",
+        "touchMapView.remove(polygon)",
+        "touchMapView.add(polygon)",
         "var draftCoordinates = coordinates",
         "mapView?.isUserInteractionEnabled",
         "cancelPolygonDraft()",
@@ -155,6 +196,8 @@ def main():
     ]:
         if phrase not in swift:
             failures.append(f"PlaceShapes.swift must include {phrase}")
+    if swift.count("guard let touchMapView = mapViewForTouchInput() else") != 3:
+        failures.append("all three active touch callbacks must guard the map view outlet")
     for phrase in [
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
@@ -173,6 +216,8 @@ def main():
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
+        "testUnavailableTouchInputMapClearsDraftCoordinates",
+        "XCTAssertNil(controller.mapViewForTouchInput())",
     ]:
         if phrase not in tests:
             failures.append(f"PlaceShapesTests.swift must include {phrase}")
@@ -220,6 +265,9 @@ def main():
         "plist bundle identifiers",
         "plist package types",
         "map view delegate outlet",
+        "touch input map outlet",
+        "hosted macOS",
+        "structural validation",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -261,6 +309,12 @@ def main():
         or "map view delegate outlet" not in map_view_delegate_plan
     ):
         failures.append("map view delegate outlet plan must record completed status and verification")
+    touch_input_map_plan = read("docs/plans/2026-06-10-touch-input-map-outlet.md")
+    if "status: completed" not in touch_input_map_plan or "mapViewForTouchInput" not in touch_input_map_plan:
+        failures.append("touch input map outlet plan must record completed status and verification")
+    hosted_validation_plan = read(HOSTED_VALIDATION_PLAN)
+    if "status: completed" not in hosted_validation_plan or "make check" not in hosted_validation_plan:
+        failures.append("hosted structural validation plan must record completed status and verification")
 
     if failures:
         for failure in failures:

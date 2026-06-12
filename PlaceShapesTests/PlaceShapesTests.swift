@@ -99,5 +99,15 @@ class PlaceShapesTests: XCTestCase {
 
         XCTAssertEqual(controller.coordinates.count, 0)
     }
+
+    func testUnavailableTouchInputMapClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        XCTAssertNil(controller.mapViewForTouchInput())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
     
 }
