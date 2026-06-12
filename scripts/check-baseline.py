@@ -53,6 +53,14 @@ def read(path):
     return (ROOT / path).read_text(encoding="utf-8", errors="replace")
 
 
+def markdown_section(text, heading):
+    match = re.search(
+        rf"(?ms)^## {re.escape(heading)}\s*$\n(.*?)(?=^## |\Z)",
+        text,
+    )
+    return match.group(1).strip() if match else ""
+
+
 def main():
     failures = []
     for path in REQUIRED:
@@ -313,8 +321,45 @@ def main():
     if "status: completed" not in touch_input_map_plan or "mapViewForTouchInput" not in touch_input_map_plan:
         failures.append("touch input map outlet plan must record completed status and verification")
     hosted_validation_plan = read(HOSTED_VALIDATION_PLAN)
-    if "status: completed" not in hosted_validation_plan or "make check" not in hosted_validation_plan:
-        failures.append("hosted structural validation plan must record completed status and verification")
+    hosted_validation_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", hosted_validation_plan
+    )
+    hosted_validation_work = markdown_section(hosted_validation_plan, "Work Completed")
+    hosted_validation_verification = markdown_section(
+        hosted_validation_plan, "Verification Completed"
+    )
+    if hosted_validation_status != ["completed"] or not hosted_validation_work:
+        failures.append(
+            "hosted structural validation plan must record one completed status and completed work"
+        )
+    if not hosted_validation_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", hosted_validation_verification
+    ):
+        failures.append(
+            "hosted structural validation plan must record finished verification without pending markers"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "python3 -W error scripts/check-baseline.py",
+        "git diff --check",
+        "Five hostile workflow and ownership mutations",
+        "27390781674",
+        "27390782458",
+        "8fb27207d644485cba7795a186c0132261608dc6",
+        "df4cb1c069e1874edd31b4311f1884172cec0e10",
+        "a309ff8b426b58ec0e2a45f0f869d46889d02405",
+        "persist-credentials: false",
+        "* @garethpaul",
+        "repository's only hosted workflow",
+    ]:
+        if evidence not in hosted_validation_verification:
+            failures.append(
+                f"hosted structural validation plan must preserve verification evidence: {evidence}"
+            )
 
     if failures:
         for failure in failures:
