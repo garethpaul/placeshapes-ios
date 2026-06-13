@@ -49,6 +49,9 @@
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
 - Do not commit personal map coordinates, recorded routes, simulator captures with private places, or machine-local Xcode state.
+- Preserve credential-free signing metadata; do not add Apple development team
+  IDs, provisioning profiles, entitlements paths, or account-specific signing
+  identities to the Xcode project.
 - Map drawings can represent private places. No network upload behavior should be added without prominent README and security updates.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Run `make lint`, `make test`, `make build`, `make verify`, and `make check` before changing project metadata, MapKit drawing behavior, or privacy-related docs.

@@ -97,6 +97,9 @@ The Make lint, test, build, verify, and check targets all run the static
 baseline on hosts without the matching legacy Xcode toolchain.
 Pinned hosted macOS structural validation runs the same `make check` contract
 on Python 3.12 without installing pods, signing, or invoking location services.
+Credential-free signing metadata is enforced in the Xcode project: no Apple
+development team, provisioning profile, entitlements path, or account-specific
+signing identity may be committed.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

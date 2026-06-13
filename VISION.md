@@ -37,6 +37,8 @@ Priority:
 - Keep the touch input map outlet guarded before coordinate conversion
 - Keep the no-pods structural validation gate running on pinned hosted macOS
 - Keep the CocoaPods platform matched to the Xcode iOS deployment target
+- Keep credential-free signing metadata free of Apple account, provisioning,
+  entitlements, and certificate-specific values
 - Keep plist bundle identifiers and plist package types explicit for targets
 - Keep standard Make gate aliases available for local static verification
 
