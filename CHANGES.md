@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Rejected degenerate polygon drafts containing fewer than three distinct valid
+  coordinates, even when the raw coordinate count is three or greater.
 - Rejected out-of-range Core Location coordinates before polygon construction
   and added valid, invalid-latitude, invalid-longitude, and draft-clearing tests.
 - Added a structural guard for credential-free signing metadata that rejects

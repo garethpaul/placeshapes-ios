@@ -63,6 +63,37 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
     }
 
+    func testPolygonRenderingAcceptsThreeDistinctCoordinatesWithDuplicateEntry() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsOnlyTwoDistinctCoordinates() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsOneRepeatedCoordinate() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
     func testBeginningPolygonDraftClearsCoordinates() {
         let controller = PlaceShapes()
         controller.coordinates = [

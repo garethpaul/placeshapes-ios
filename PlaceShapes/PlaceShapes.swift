@@ -31,7 +31,28 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 return false
             }
         }
-        return true
+        return hasAtLeastThreeDistinctCoordinates(coordinates)
+    }
+
+    static func hasAtLeastThreeDistinctCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
+        var distinctCoordinates = [CLLocationCoordinate2D]()
+        for coordinate in coordinates {
+            var alreadyRecorded = false
+            for existingCoordinate in distinctCoordinates {
+                if existingCoordinate.latitude == coordinate.latitude &&
+                    existingCoordinate.longitude == coordinate.longitude {
+                    alreadyRecorded = true
+                    break
+                }
+            }
+            if !alreadyRecorded {
+                distinctCoordinates.append(coordinate)
+                if distinctCoordinates.count == 3 {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     func beginPolygonDraft() {

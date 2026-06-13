@@ -13,6 +13,7 @@ PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
 HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
 SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.md"
 INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md"
+DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -48,6 +49,7 @@ REQUIRED = [
     HOSTED_VALIDATION_PLAN,
     SIGNING_METADATA_PLAN,
     INVALID_COORDINATES_PLAN,
+    DISTINCT_COORDINATES_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -227,6 +229,11 @@ def main():
         "shouldRenderPolygon(coordinateCount:",
         "static func shouldRenderPolygon(coordinates:",
         "CLLocationCoordinate2DIsValid(coordinate)",
+        "static func hasAtLeastThreeDistinctCoordinates(_ coordinates:",
+        "return hasAtLeastThreeDistinctCoordinates(coordinates)",
+        "existingCoordinate.latitude == coordinate.latitude",
+        "existingCoordinate.longitude == coordinate.longitude",
+        "if distinctCoordinates.count == 3",
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
         "func mapViewForTouchInput() -> MKMapView?",
@@ -249,6 +256,24 @@ def main():
             failures.append(f"PlaceShapes.swift must include {phrase}")
     if swift.count("guard let touchMapView = mapViewForTouchInput() else") != 3:
         failures.append("all three active touch callbacks must guard the map view outlet")
+    coordinate_validation_source = swift[
+        swift.find("static func shouldRenderPolygon(coordinates:"):
+        swift.find("func beginPolygonDraft()")
+    ]
+    validation_markers = [
+        "CLLocationCoordinate2DIsValid(coordinate)",
+        "return hasAtLeastThreeDistinctCoordinates(coordinates)",
+        "static func hasAtLeastThreeDistinctCoordinates",
+        "if distinctCoordinates.count == 3",
+    ]
+    if any(marker not in coordinate_validation_source for marker in validation_markers) or not all(
+        coordinate_validation_source.find(left)
+        < coordinate_validation_source.find(right)
+        for left, right in zip(validation_markers, validation_markers[1:])
+    ):
+        failures.append(
+            "polygon validation must check coordinate ranges before requiring three distinct points"
+        )
     for phrase in [
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
@@ -261,6 +286,9 @@ def main():
         "CLLocationCoordinate2D(latitude: 91.0, longitude: -122.1)",
         "testPolygonRenderingRejectsInvalidLongitude",
         "CLLocationCoordinate2D(latitude: 37.1, longitude: 181.0)",
+        "testPolygonRenderingAcceptsThreeDistinctCoordinatesWithDuplicateEntry",
+        "testPolygonRenderingRejectsOnlyTwoDistinctCoordinates",
+        "testPolygonRenderingRejectsOneRepeatedCoordinate",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
@@ -330,9 +358,20 @@ def main():
         "structural validation",
         "CLLocationCoordinate2DIsValid",
         "out-of-range",
+        "three distinct",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
+
+    distinct_coordinate_claims = {
+        "README.md": "requires at least three distinct valid coordinates",
+        "SECURITY.md": "require at least three distinct valid coordinates",
+        "VISION.md": "fewer than three distinct coordinates",
+        "CHANGES.md": "fewer than three distinct valid coordinates",
+    }
+    for path, phrase in distinct_coordinate_claims.items():
+        if phrase not in " ".join(read(path).split()):
+            failures.append(f"{path} must include {phrase}")
 
     plan = read(PLAN)
     if "status: completed" not in plan or "make check" not in plan:
@@ -466,6 +505,45 @@ def main():
         if evidence not in invalid_coordinates_verification:
             failures.append(
                 f"invalid polygon coordinates verification must record {evidence}"
+            )
+
+    distinct_coordinates_plan = read(DISTINCT_COORDINATES_PLAN)
+    distinct_coordinates_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", distinct_coordinates_plan
+    )
+    distinct_coordinates_work = markdown_section(
+        distinct_coordinates_plan, "Work Completed"
+    )
+    distinct_coordinates_verification = markdown_section(
+        distinct_coordinates_plan, "Verification Completed"
+    )
+    if distinct_coordinates_status != ["completed"] or not distinct_coordinates_work:
+        failures.append(
+            "distinct polygon coordinates plan must record completed status and work"
+        )
+    if not distinct_coordinates_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", distinct_coordinates_verification
+    ):
+        failures.append(
+            "distinct polygon coordinates plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "workflow YAML",
+        "plist and workspace XML",
+        "README SVG",
+        "hostile mutations",
+        "git diff --check",
+        "secret, personal-coordinate, and generated-artifact scan",
+    ]:
+        if evidence not in distinct_coordinates_verification:
+            failures.append(
+                f"distinct polygon coordinates verification must record {evidence}"
             )
 
     if failures:

@@ -29,6 +29,8 @@ Priority:
 - Keep drawn coordinates local by default
 - Keep non-placeholder XCTest coverage for polygon creation rules
 - Keep invalid latitude and longitude values from reaching polygon construction
+- Keep degenerate drafts with fewer than three distinct coordinates from
+  reaching polygon construction
 - Keep starting polygon drafts from reusing stale coordinates
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes
