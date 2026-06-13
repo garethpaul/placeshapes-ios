@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Rejected out-of-range Core Location coordinates before polygon construction
+  and added valid, invalid-latitude, invalid-longitude, and draft-clearing tests.
 - Added a structural guard for credential-free signing metadata that rejects
   Apple development teams, provisioning profiles, entitlements paths, and
   account-specific signing identities.

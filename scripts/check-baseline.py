@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
 HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
 SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.md"
+INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -46,6 +47,7 @@ REQUIRED = [
     "docs/plans/2026-06-10-touch-input-map-outlet.md",
     HOSTED_VALIDATION_PLAN,
     SIGNING_METADATA_PLAN,
+    INVALID_COORDINATES_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -223,6 +225,8 @@ def main():
         "MKMapViewDelegate",
         "MKPolygonRenderer",
         "shouldRenderPolygon(coordinateCount:",
+        "static func shouldRenderPolygon(coordinates:",
+        "CLLocationCoordinate2DIsValid(coordinate)",
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
         "func mapViewForTouchInput() -> MKMapView?",
@@ -232,6 +236,7 @@ def main():
         "mapView?.delegate = self",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
+        "guard PlaceShapes.shouldRenderPolygon(coordinates: coordinates)",
         "guard let nextPolygon = finalizePolygonDraft()",
         "touchMapView.remove(polygon)",
         "touchMapView.add(polygon)",
@@ -250,6 +255,13 @@ def main():
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 2))",
         "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))",
+        "testPolygonRenderingAcceptsValidCoordinates",
+        "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
+        "testPolygonRenderingRejectsInvalidLatitude",
+        "CLLocationCoordinate2D(latitude: 91.0, longitude: -122.1)",
+        "testPolygonRenderingRejectsInvalidLongitude",
+        "CLLocationCoordinate2D(latitude: 37.1, longitude: 181.0)",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
         "testCancellingPolygonDraftClearsCoordinates",
@@ -260,6 +272,7 @@ def main():
         "XCTAssertNil(controller.finalizePolygonDraft())",
         "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
+        "testInvalidCoordinateFinalizationClearsDraftCoordinates",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
         "testUnavailableTouchInputMapClearsDraftCoordinates",
@@ -315,6 +328,8 @@ def main():
         "hosted macOS",
         "credential-free signing metadata",
         "structural validation",
+        "CLLocationCoordinate2DIsValid",
+        "out-of-range",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -412,6 +427,45 @@ def main():
         if phrase not in signing_metadata_plan:
             failures.append(
                 f"credential-free signing metadata plan must record {phrase}"
+            )
+
+    invalid_coordinates_plan = read(INVALID_COORDINATES_PLAN)
+    invalid_coordinates_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", invalid_coordinates_plan
+    )
+    invalid_coordinates_work = markdown_section(
+        invalid_coordinates_plan, "Work Completed"
+    )
+    invalid_coordinates_verification = markdown_section(
+        invalid_coordinates_plan, "Verification Completed"
+    )
+    if invalid_coordinates_status != ["completed"] or not invalid_coordinates_work:
+        failures.append(
+            "invalid polygon coordinates plan must record one completed status and completed work"
+        )
+    if not invalid_coordinates_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", invalid_coordinates_verification
+    ):
+        failures.append(
+            "invalid polygon coordinates plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "workflow YAML",
+        "plist and workspace XML",
+        "README SVG",
+        "hostile mutations rejected",
+        "git diff --check",
+        "secret, personal-coordinate, and generated-artifact scan",
+    ]:
+        if evidence not in invalid_coordinates_verification:
+            failures.append(
+                f"invalid polygon coordinates verification must record {evidence}"
             )
 
     if failures:
