@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-13
+
+- Added a structural guard for credential-free signing metadata that rejects
+  Apple development teams, provisioning profiles, entitlements paths, and
+  account-specific signing identities.
+
 ## 2026-06-09
 
 - Added an explicit start-draft helper and test so new polygon drafts clear

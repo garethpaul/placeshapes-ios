@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
 HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
+SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -44,6 +45,7 @@ REQUIRED = [
     "docs/plans/2026-06-10-map-view-delegate-outlet.md",
     "docs/plans/2026-06-10-touch-input-map-outlet.md",
     HOSTED_VALIDATION_PLAN,
+    SIGNING_METADATA_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -168,6 +170,42 @@ def main():
         failures.append("Podfile should not add third-party pods without updating the baseline")
 
     pbxproj = read("PlaceShapes.xcodeproj/project.pbxproj")
+    signing_settings = []
+    for line in pbxproj.splitlines():
+        match = re.match(
+            r'^\s*"?([A-Z][A-Z0-9_]*)(?:\[[^]]+\])?"?\s*=\s*(.*?);\s*$',
+            line,
+        )
+        if match:
+            signing_settings.append(match.groups())
+    forbidden_signing_settings = {
+        "CODE_SIGN_ENTITLEMENTS",
+        "DEVELOPMENT_TEAM",
+        "PROVISIONING_PROFILE",
+        "PROVISIONING_PROFILE_SPECIFIER",
+    }
+    present_forbidden_settings = sorted(
+        name for name, _ in signing_settings if name in forbidden_signing_settings
+    )
+    if present_forbidden_settings:
+        failures.append(
+            "Xcode project must not contain account-specific signing settings: "
+            + ", ".join(present_forbidden_settings)
+        )
+    signing_identities = [
+        value for name, value in signing_settings if name == "CODE_SIGN_IDENTITY"
+    ]
+    expected_signing_identities = [
+        '"iPhone Developer"',
+        '"iPhone Developer"',
+        '""',
+        '""',
+    ]
+    if signing_identities != expected_signing_identities:
+        failures.append(
+            "Xcode project must retain only its two generic and two empty "
+            "signing identities"
+        )
     for phrase in [
         "PlaceShapes.framework",
         "PlaceShapesTests.xctest",
@@ -275,6 +313,7 @@ def main():
         "map view delegate outlet",
         "touch input map outlet",
         "hosted macOS",
+        "credential-free signing metadata",
         "structural validation",
     ]:
         if phrase.lower() not in docs.lower():
@@ -359,6 +398,20 @@ def main():
         if evidence not in hosted_validation_verification:
             failures.append(
                 f"hosted structural validation plan must preserve verification evidence: {evidence}"
+            )
+
+    signing_metadata_plan = read(SIGNING_METADATA_PLAN)
+    for phrase in [
+        "status: completed",
+        "make check",
+        "six hostile mutations",
+        "DEVELOPMENT_TEAM",
+        "PROVISIONING_PROFILE_SPECIFIER",
+        "CODE_SIGN_ENTITLEMENTS",
+    ]:
+        if phrase not in signing_metadata_plan:
+            failures.append(
+                f"credential-free signing metadata plan must record {phrase}"
             )
 
     if failures:

@@ -1,6 +1,6 @@
 # Credential-free signing metadata
 
-status: planned
+status: completed
 
 ## Context
 
@@ -20,5 +20,21 @@ entitlements paths, or signing certificates from being committed later.
 
 ## Verification
 
-- Run all Make gates, checker compilation, hostile mutations, diff checks,
-  generated-artifact scans, and secret scans.
+## Work completed
+
+- Added project-file parsing that rejects `DEVELOPMENT_TEAM`,
+  `PROVISIONING_PROFILE`, `PROVISIONING_PROFILE_SPECIFIER`, and
+  `CODE_SIGN_ENTITLEMENTS` build settings.
+- Required exactly the two generic `iPhone Developer` and two empty signing
+  identities already present in the project.
+- Updated contributor, security, vision, README, and change documentation.
+
+## Verification completed
+
+- `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  passed the no-Xcode structural baseline.
+- Checker compilation, external-working-directory execution,
+  `git diff --check`, artifact scans, and secret scans passed.
+- The checker rejected six hostile mutations covering a development team,
+  provisioning profile UUID, provisioning profile specifier, entitlements
+  path, account-specific signing identity, and removed empty identity.

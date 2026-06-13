@@ -72,6 +72,8 @@ before changing project metadata, MapKit drawing behavior, privacy docs, or
 CocoaPods configuration.
 Pinned, read-only hosted macOS structural validation runs without credentials,
 pod installation, signing, network calls, or location-service access.
+Keep credential-free signing metadata free of Apple development team IDs,
+provisioning profiles, entitlements paths, and account-specific certificates.
 
 ## Safe Research Guidelines
 
