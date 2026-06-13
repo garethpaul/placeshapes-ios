@@ -76,6 +76,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Polygon finalization also rejects out-of-range Core Location latitude or
   longitude values before constructing an `MKPolygon`, and clears the rejected
   draft coordinate buffer.
+- Polygon finalization requires at least three distinct valid coordinates, so
+  repeated points cannot turn a one- or two-point draft into a rendered shape.
 - Starting polygon drafts clears any stale coordinates before collecting the
   next touch path.
 - Cancelled touches clear in-progress polygon draft coordinates.
