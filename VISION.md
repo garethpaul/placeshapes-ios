@@ -28,6 +28,7 @@ Priority:
 - Avoid changing gesture behavior without a sample app check
 - Keep drawn coordinates local by default
 - Keep non-placeholder XCTest coverage for polygon creation rules
+- Keep invalid latitude and longitude values from reaching polygon construction
 - Keep starting polygon drafts from reusing stale coordinates
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes
@@ -47,7 +48,6 @@ Next priorities:
 - Document supported Xcode, Swift, and iOS versions
 - Add a small sample app flow that demonstrates importing `PlaceShapes`
 - Add tests or manual verification notes for polygon creation
-- Add more invalid-coordinate fixtures for drawing helpers
 - Clarify how callers can read, reset, and style drawn shapes
 - Add Xcode/simulator verification notes when the matching Apple toolchain is
   available

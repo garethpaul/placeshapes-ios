@@ -33,6 +33,36 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))
     }
 
+    func testPolygonRenderingAcceptsValidCoordinates() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsInvalidLatitude() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 91.0, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsInvalidLongitude() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: 181.0),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
     func testBeginningPolygonDraftClearsCoordinates() {
         let controller = PlaceShapes()
         controller.coordinates = [
@@ -86,6 +116,18 @@ class PlaceShapesTests: XCTestCase {
         ]
 
         XCTAssertNotNil(controller.finalizePolygonDraft())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
+    func testInvalidCoordinateFinalizationClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 91.0, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertNil(controller.finalizePolygonDraft())
         XCTAssertEqual(controller.coordinates.count, 0)
     }
 

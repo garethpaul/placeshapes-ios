@@ -1,6 +1,6 @@
 # Invalid Polygon Coordinate Validation
 
-status: planned
+status: completed
 
 ## Context
 
@@ -80,3 +80,23 @@ verification evidence.
   deployment targets, or dependencies.
 - Do not claim a current Xcode build or simulator interaction was tested on the
   Linux development host.
+
+## Work Completed
+
+Added coordinate-aware polygon validation using Core Location's stable validity
+predicate, switched draft finalization to that guard, and added valid,
+invalid-latitude, invalid-longitude, and invalid-draft clearing XCTest fixtures.
+
+## Verification Completed
+
+- `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  passed the static baseline.
+- The checker passed from an external working directory.
+- The workflow YAML, plist and workspace XML, and README SVG parsed
+  successfully.
+- Ten focused hostile mutations rejected weakened predicate, finalization,
+  fixture, draft-clearing, documentation, status, and evidence contracts.
+- `git diff --check` passed.
+- The `secret, personal-coordinate, and generated-artifact scan` passed.
+- Xcode and simulator validation were unavailable because the Linux host does
+  not provide the matching Apple toolchain.

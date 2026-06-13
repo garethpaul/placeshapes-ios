@@ -73,6 +73,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
   polygon coordinate counts.
+- Polygon finalization also rejects out-of-range Core Location latitude or
+  longitude values before constructing an `MKPolygon`, and clears the rejected
+  draft coordinate buffer.
 - Starting polygon drafts clears any stale coordinates before collecting the
   next touch path.
 - Cancelled touches clear in-progress polygon draft coordinates.
@@ -125,6 +128,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   privacy-related docs.
 - Keep non-placeholder XCTest coverage in place when changing polygon creation
   rules.
+- Keep coordinate-aware polygon validation using
+  `CLLocationCoordinate2DIsValid` before `MKPolygon` construction.
 - Keep starting polygon drafts from reusing stale coordinates.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep cancelled touch callbacks clearing stale polygon drafts regardless of

@@ -21,6 +21,19 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         return coordinateCount >= 3
     }
 
+    static func shouldRenderPolygon(coordinates: [CLLocationCoordinate2D]) -> Bool {
+        guard shouldRenderPolygon(coordinateCount: coordinates.count) else {
+            return false
+        }
+
+        for coordinate in coordinates {
+            if !CLLocationCoordinate2DIsValid(coordinate) {
+                return false
+            }
+        }
+        return true
+    }
+
     func beginPolygonDraft() {
         coordinates.removeAll()
     }
@@ -38,7 +51,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     }
 
     func finalizePolygonDraft() -> MKPolygon? {
-        guard PlaceShapes.shouldRenderPolygon(coordinateCount: coordinates.count) else {
+        guard PlaceShapes.shouldRenderPolygon(coordinates: coordinates) else {
             cancelPolygonDraft()
             return nil
         }
