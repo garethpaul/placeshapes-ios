@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-14
+
+- Made every standard Make alias resolve the structural checker from the
+  repository root, including external absolute-Makefile calls.
+
 ## 2026-06-13
 
 - Rejected degenerate polygon drafts containing fewer than three distinct valid

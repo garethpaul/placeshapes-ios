@@ -14,6 +14,7 @@ HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
 SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.md"
 INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md"
 DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.md"
+LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-make-gates.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -50,6 +51,7 @@ REQUIRED = [
     SIGNING_METADATA_PLAN,
     INVALID_COORDINATES_PLAN,
     DISTINCT_COORDINATES_PLAN,
+    LOCATION_INDEPENDENT_MAKE_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -75,7 +77,8 @@ def main():
 
     makefile = read("Makefile")
     for phrase in [
-        "python3 scripts/check-baseline.py",
+        "override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        'python3 "$(REPO_ROOT)/scripts/check-baseline.py"',
         "check: verify",
         "verify: static-check",
         "lint: static-check",
@@ -337,6 +340,7 @@ def main():
         "make test",
         "make build",
         "make verify",
+        "absolute Makefile path works from another directory",
         "MapKit",
         "local by default",
         "coordinates",
@@ -362,6 +366,11 @@ def main():
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
+    changes = " ".join(read("CHANGES.md").split())
+    if "external absolute-Makefile calls" not in changes:
+        failures.append(
+            "CHANGES.md must record external absolute-Makefile calls"
+        )
 
     distinct_coordinate_claims = {
         "README.md": "requires at least three distinct valid coordinates",
@@ -544,6 +553,47 @@ def main():
         if evidence not in distinct_coordinates_verification:
             failures.append(
                 f"distinct polygon coordinates verification must record {evidence}"
+            )
+
+    location_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
+    location_make_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", location_make_plan
+    )
+    location_make_work = markdown_section(location_make_plan, "Work Completed")
+    location_make_verification = markdown_section(
+        location_make_plan, "Verification Completed"
+    )
+    if location_make_status != ["completed"] or not location_make_work:
+        failures.append(
+            "location-independent Make plan must record one completed status "
+            "and completed work"
+        )
+    if not location_make_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", location_make_verification
+    ):
+        failures.append(
+            "location-independent Make plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "make static-check",
+        "from `/tmp`",
+        "absolute",
+        "caller-supplied `REPO_ROOT=/tmp`",
+        "python3 -m py_compile scripts/check-baseline.py",
+        "workflow YAML",
+        "all three plists",
+        "workspace/scheme XML",
+        "README SVG",
+        "Nine isolated hostile mutations were rejected",
+    ]:
+        if evidence not in location_make_verification:
+            failures.append(
+                f"location-independent Make verification must record {evidence}"
             )
 
     if failures:
