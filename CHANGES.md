@@ -4,6 +4,8 @@
 
 - Made every standard Make alias resolve the structural checker from the
   repository root, including external absolute-Makefile calls.
+- Rejected polygon drafts whose valid, distinct coordinates are all collinear,
+  and replaced accepted zero-area fixtures with non-collinear controls.
 
 ## 2026-06-13
 

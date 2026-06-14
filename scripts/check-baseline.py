@@ -15,6 +15,7 @@ SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.
 INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md"
 DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.md"
 LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-make-gates.md"
+NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -52,6 +53,7 @@ REQUIRED = [
     INVALID_COORDINATES_PLAN,
     DISTINCT_COORDINATES_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
+    NONCOLLINEAR_COORDINATES_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -265,9 +267,13 @@ def main():
     ]
     validation_markers = [
         "CLLocationCoordinate2DIsValid(coordinate)",
-        "return hasAtLeastThreeDistinctCoordinates(coordinates)",
+        "return hasAtLeastThreeDistinctCoordinates(coordinates) &&",
+        "hasAtLeastThreeNonCollinearCoordinates(coordinates)",
         "static func hasAtLeastThreeDistinctCoordinates",
         "if distinctCoordinates.count == 3",
+        "static func hasAtLeastThreeNonCollinearCoordinates",
+        "let collinearityTolerance = 0.000000000001",
+        "if abs(crossProduct) > collinearityTolerance",
     ]
     if any(marker not in coordinate_validation_source for marker in validation_markers) or not all(
         coordinate_validation_source.find(left)
@@ -275,7 +281,7 @@ def main():
         for left, right in zip(validation_markers, validation_markers[1:])
     ):
         failures.append(
-            "polygon validation must check coordinate ranges before requiring three distinct points"
+            "polygon validation must check coordinate ranges, distinct points, and non-collinearity in order"
         )
     for phrase in [
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
@@ -292,6 +298,9 @@ def main():
         "testPolygonRenderingAcceptsThreeDistinctCoordinatesWithDuplicateEntry",
         "testPolygonRenderingRejectsOnlyTwoDistinctCoordinates",
         "testPolygonRenderingRejectsOneRepeatedCoordinate",
+        "testPolygonRenderingRejectsDistinctCollinearCoordinates",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: horizontalCoordinates))",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
@@ -303,6 +312,7 @@ def main():
         "XCTAssertNil(controller.finalizePolygonDraft())",
         "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
+        "testCollinearPolygonFinalizationClearsDraftCoordinates",
         "testInvalidCoordinateFinalizationClearsDraftCoordinates",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
@@ -363,6 +373,7 @@ def main():
         "CLLocationCoordinate2DIsValid",
         "out-of-range",
         "three distinct",
+        "non-collinear",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
@@ -379,6 +390,16 @@ def main():
         "CHANGES.md": "fewer than three distinct valid coordinates",
     }
     for path, phrase in distinct_coordinate_claims.items():
+        if phrase not in " ".join(read(path).split()):
+            failures.append(f"{path} must include {phrase}")
+
+    noncollinear_coordinate_claims = {
+        "README.md": "distinct but collinear coordinates",
+        "SECURITY.md": "require non-collinear coordinates",
+        "VISION.md": "distinct but collinear coordinates",
+        "CHANGES.md": "valid, distinct coordinates are all collinear",
+    }
+    for path, phrase in noncollinear_coordinate_claims.items():
         if phrase not in " ".join(read(path).split()):
             failures.append(f"{path} must include {phrase}")
 
@@ -553,6 +574,49 @@ def main():
         if evidence not in distinct_coordinates_verification:
             failures.append(
                 f"distinct polygon coordinates verification must record {evidence}"
+            )
+
+    noncollinear_coordinates_plan = read(NONCOLLINEAR_COORDINATES_PLAN)
+    noncollinear_coordinates_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", noncollinear_coordinates_plan
+    )
+    noncollinear_coordinates_work = markdown_section(
+        noncollinear_coordinates_plan, "Work Completed"
+    )
+    noncollinear_coordinates_verification = markdown_section(
+        noncollinear_coordinates_plan, "Verification Completed"
+    )
+    if (
+        noncollinear_coordinates_status != ["completed"]
+        or not noncollinear_coordinates_work
+    ):
+        failures.append(
+            "non-collinear polygon coordinates plan must record completed status and work"
+        )
+    if not noncollinear_coordinates_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b",
+        noncollinear_coordinates_verification,
+    ):
+        failures.append(
+            "non-collinear polygon coordinates plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "from `/tmp`",
+        "workflow YAML",
+        "all three plists",
+        "workspace and scheme XML",
+        "README SVG",
+        "testPolygonRenderingRejectsDistinctCollinearCoordinates",
+        "testCollinearPolygonFinalizationClearsDraftCoordinates",
+    ]:
+        if evidence not in noncollinear_coordinates_verification:
+            failures.append(
+                f"non-collinear polygon coordinates verification must record {evidence}"
             )
 
     location_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)

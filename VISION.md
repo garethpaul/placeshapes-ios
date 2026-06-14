@@ -31,6 +31,7 @@ Priority:
 - Keep invalid latitude and longitude values from reaching polygon construction
 - Keep degenerate drafts with fewer than three distinct coordinates from
   reaching polygon construction
+- Keep distinct but collinear coordinates from producing zero-area polygons
 - Keep starting polygon drafts from reusing stale coordinates
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes

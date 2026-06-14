@@ -37,7 +37,7 @@ class PlaceShapesTests: XCTestCase {
         let coordinates = [
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
             CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
-            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.15),
         ]
 
         XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
@@ -68,7 +68,7 @@ class PlaceShapesTests: XCTestCase {
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
             CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
-            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.15),
         ]
 
         XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
@@ -92,6 +92,22 @@ class PlaceShapesTests: XCTestCase {
         ]
 
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsDistinctCollinearCoordinates() {
+        let horizontalCoordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.8),
+        ]
+        let diagonalCoordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: horizontalCoordinates))
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))
     }
 
     func testBeginningPolygonDraftClearsCoordinates() {
@@ -143,10 +159,22 @@ class PlaceShapesTests: XCTestCase {
         controller.coordinates = [
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
             CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
-            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.15),
         ]
 
         XCTAssertNotNil(controller.finalizePolygonDraft())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
+    func testCollinearPolygonFinalizationClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
+            CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertNil(controller.finalizePolygonDraft())
         XCTAssertEqual(controller.coordinates.count, 0)
     }
 

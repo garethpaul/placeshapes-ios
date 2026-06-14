@@ -31,7 +31,8 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 return false
             }
         }
-        return hasAtLeastThreeDistinctCoordinates(coordinates)
+        return hasAtLeastThreeDistinctCoordinates(coordinates) &&
+            hasAtLeastThreeNonCollinearCoordinates(coordinates)
     }
 
     static func hasAtLeastThreeDistinctCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
@@ -50,6 +51,37 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 if distinctCoordinates.count == 3 {
                     return true
                 }
+            }
+        }
+        return false
+    }
+
+    static func hasAtLeastThreeNonCollinearCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
+        guard let firstCoordinate = coordinates.first else {
+            return false
+        }
+
+        var secondCoordinate: CLLocationCoordinate2D?
+        for coordinate in coordinates {
+            if coordinate.latitude != firstCoordinate.latitude ||
+                coordinate.longitude != firstCoordinate.longitude {
+                secondCoordinate = coordinate
+                break
+            }
+        }
+        guard let distinctSecondCoordinate = secondCoordinate else {
+            return false
+        }
+
+        let collinearityTolerance = 0.000000000001
+        for coordinate in coordinates {
+            let crossProduct =
+                (distinctSecondCoordinate.longitude - firstCoordinate.longitude) *
+                (coordinate.latitude - firstCoordinate.latitude) -
+                (distinctSecondCoordinate.latitude - firstCoordinate.latitude) *
+                (coordinate.longitude - firstCoordinate.longitude)
+            if abs(crossProduct) > collinearityTolerance {
+                return true
             }
         }
         return false

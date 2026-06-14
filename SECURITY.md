@@ -45,6 +45,8 @@ Keep non-placeholder XCTest coverage around coordinate-count rules so malformed
 input remains predictable.
 Polygon construction should require at least three distinct valid coordinates;
 repeated points must not turn a one- or two-point draft into an accepted shape.
+Polygon construction should also require non-collinear coordinates so distinct
+points on one line cannot produce a zero-area overlay.
 Starting polygon drafts should clear stale coordinates before collecting the
 next touch path.
 Cancelled touches should clear in-progress polygon draft coordinates so stale
