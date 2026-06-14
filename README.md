@@ -78,6 +78,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   draft coordinate buffer.
 - Polygon finalization requires at least three distinct valid coordinates, so
   repeated points cannot turn a one- or two-point draft into a rendered shape.
+- Polygon finalization also rejects distinct but collinear coordinates so
+  zero-area drafts cannot replace the current overlay.
 - Starting polygon drafts clears any stale coordinates before collecting the
   next touch path.
 - Cancelled touches clear in-progress polygon draft coordinates.
@@ -134,6 +136,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   rules.
 - Keep coordinate-aware polygon validation using
   `CLLocationCoordinate2DIsValid` before `MKPolygon` construction.
+- Keep non-collinear coordinate validation after valid and distinct checks.
 - Keep starting polygon drafts from reusing stale coordinates.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep cancelled touch callbacks clearing stale polygon drafts regardless of

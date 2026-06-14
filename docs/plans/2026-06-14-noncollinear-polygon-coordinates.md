@@ -1,6 +1,6 @@
 # Non-Collinear Polygon Coordinates
 
-status: planned
+status: completed
 
 ## Context
 
@@ -45,12 +45,30 @@ one line. Such a draft passes the current checks while producing a zero-area
 - Existing invalid, duplicate-only, valid, and accepted-finalization fixtures
   remain unchanged.
 
-## Verification
+## Work Completed
 
-- Root and external-directory structural Make aliases.
-- Python checker compilation plus workflow, plist, workspace, scheme, SVG, and
-  asset parsing.
-- Mutation checks for source logic, direct and finalization fixtures,
-  documentation, and completed plan evidence.
-- Final intended-path, protected-path, generated-artifact, privacy, signing,
-  personal-coordinate, and high-signal credential audits.
+- Required the coordinate set to contain a point off the line defined by the
+  first two distinct coordinates before constructing `MKPolygon`.
+- Added horizontal and diagonal collinear rejection fixtures, a non-collinear
+  accepted control, and rejected-finalization draft cleanup coverage.
+- Extended structural and maintenance contracts without changing touch input,
+  rendering, project metadata, signing, dependencies, or privacy behavior.
+
+## Verification Completed
+
+- `make lint`, `make test`, `make build`, `make verify`, and `make check` passed
+  from the repository root.
+- Absolute-Makefile `make check` and `make verify` passed from `/tmp`.
+- `python3 -m py_compile scripts/check-baseline.py` passed.
+- The workflow YAML, all three plists, workspace and scheme XML, and `README SVG`
+  parsed successfully.
+- `testPolygonRenderingRejectsDistinctCollinearCoordinates` records horizontal
+  and diagonal rejection, while accepted fixtures use non-collinear controls.
+- `testCollinearPolygonFinalizationClearsDraftCoordinates` records nil overlay
+  creation and draft cleanup for a rejected zero-area draft.
+- Six isolated hostile mutations were rejected: source predicate bypass,
+  zero-tolerance regression, direct fixture removal, finalization fixture
+  removal, documentation removal, and incomplete plan status.
+- `git diff --check`, exact intended-path review, protected project and signing
+  path checks, generated-artifact inspection, privacy and personal-coordinate
+  screening, and high-signal credential scanning passed across eight files.
