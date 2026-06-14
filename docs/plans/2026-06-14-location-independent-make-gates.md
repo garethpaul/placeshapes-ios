@@ -1,6 +1,6 @@
 # Location-Independent Make Gates
 
-status: planned
+status: completed
 
 ## Context
 
@@ -39,7 +39,30 @@ own directory.
 - Run every standard alias from the repository root and through the absolute
   Makefile path from `/tmp`, including a caller-supplied root override.
 - Compile the checker outside the repository and parse workflow YAML, plists,
-  workspace/storyboard/XML, asset-catalog JSON, and README SVG.
+  workspace/scheme XML, and README SVG.
 - Run isolated hostile mutations over rooted execution and completed evidence.
 - Audit intended paths, unchanged implementation/project surfaces, whitespace,
   generated artifacts, personal coordinates, and secret-like data.
+
+## Work Completed
+
+The Makefile now derives an override-protected absolute repository root from
+its own location and invokes the dependency-free structural checker through
+that root. Every existing alias still resolves to the same checker, and no
+Swift, XCTest, Xcode project, plist, workspace, asset, workflow, signing,
+dependency, coordinate, gesture, MapKit, or privacy surface changed.
+
+## Verification Completed
+
+- `make lint`, `make test`, `make build`, `make verify`, `make check`, and
+  `make static-check` passed from the repository root.
+- Every alias passed from `/tmp` through the repository's absolute Makefile
+  path.
+- External `make check` passed with caller-supplied `REPO_ROOT=/tmp`, confirming
+  command-line variables cannot redirect checker execution.
+- `python3 -m py_compile scripts/check-baseline.py` passed with bytecode routed
+  outside the repository; workflow YAML, all three plists,
+  workspace/scheme XML, and README SVG parsed successfully.
+- Nine isolated hostile mutations were rejected across root derivation,
+  override resistance, checker invocation, completed evidence, README, and
+  change-history contracts.
