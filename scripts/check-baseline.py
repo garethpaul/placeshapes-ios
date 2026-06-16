@@ -16,6 +16,7 @@ INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md
 DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.md"
 LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-make-gates.md"
 NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
+SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -54,6 +55,7 @@ REQUIRED = [
     DISTINCT_COORDINATES_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
     NONCOLLINEAR_COORDINATES_PLAN,
+    SIMPLE_POLYGON_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -269,11 +271,25 @@ def main():
         "CLLocationCoordinate2DIsValid(coordinate)",
         "return hasAtLeastThreeDistinctCoordinates(coordinates) &&",
         "hasAtLeastThreeNonCollinearCoordinates(coordinates)",
+        "hasSimplePolygonRing(coordinates)",
         "static func hasAtLeastThreeDistinctCoordinates",
         "if distinctCoordinates.count == 3",
         "static func hasAtLeastThreeNonCollinearCoordinates",
         "let collinearityTolerance = 0.000000000001",
         "if abs(crossProduct) > collinearityTolerance",
+        "static func hasSimplePolygonRing",
+        "let firstEdgeEndIndex = (firstEdgeStartIndex + 1) % coordinateCount",
+        "let secondEdgeEndIndex = (secondEdgeStartIndex + 1) % coordinateCount",
+        "if firstEdgeEndIndex == secondEdgeStartIndex ||\n                    secondEdgeEndIndex == firstEdgeStartIndex",
+        "if segmentsIntersect(",
+        "static func segmentsIntersect(",
+        "firstStartOrientation != 0 && firstEndOrientation != 0",
+        "firstStartOrientation == 0 && isCoordinate(secondStart",
+        "firstEndOrientation == 0 && isCoordinate(secondEnd",
+        "secondStartOrientation == 0 && isCoordinate(firstStart",
+        "secondEndOrientation == 0 &&\n            isCoordinate(firstEnd",
+        "static func orientation(",
+        "static func isCoordinate(",
     ]
     if any(marker not in coordinate_validation_source for marker in validation_markers) or not all(
         coordinate_validation_source.find(left)
@@ -281,8 +297,10 @@ def main():
         for left, right in zip(validation_markers, validation_markers[1:])
     ):
         failures.append(
-            "polygon validation must check coordinate ranges, distinct points, and non-collinearity in order"
+            "polygon validation must check coordinate ranges, distinct points, non-collinearity, and a simple ring in order"
         )
+    if swift.count("polygonIntersectionTolerance = 0.000000000001") != 1:
+        failures.append("simple polygon validation must use one reviewed intersection tolerance")
     for phrase in [
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
@@ -295,12 +313,16 @@ def main():
         "CLLocationCoordinate2D(latitude: 91.0, longitude: -122.1)",
         "testPolygonRenderingRejectsInvalidLongitude",
         "CLLocationCoordinate2D(latitude: 37.1, longitude: 181.0)",
-        "testPolygonRenderingAcceptsThreeDistinctCoordinatesWithDuplicateEntry",
+        "testPolygonRenderingRejectsRepeatedNonAdjacentCoordinate",
         "testPolygonRenderingRejectsOnlyTwoDistinctCoordinates",
         "testPolygonRenderingRejectsOneRepeatedCoordinate",
         "testPolygonRenderingRejectsDistinctCollinearCoordinates",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: horizontalCoordinates))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))",
+        "testPolygonRenderingRejectsSelfIntersectingCoordinates",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: bowTieCoordinates))",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: overlappingCoordinates))",
+        "testPolygonRenderingAcceptsConcaveCoordinates",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
@@ -313,6 +335,7 @@ def main():
         "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
         "testCollinearPolygonFinalizationClearsDraftCoordinates",
+        "testSelfIntersectingPolygonFinalizationClearsDraftCoordinates",
         "testInvalidCoordinateFinalizationClearsDraftCoordinates",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
@@ -617,6 +640,47 @@ def main():
         if evidence not in noncollinear_coordinates_verification:
             failures.append(
                 f"non-collinear polygon coordinates verification must record {evidence}"
+            )
+
+    simple_polygon_plan = read(SIMPLE_POLYGON_PLAN)
+    simple_polygon_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", simple_polygon_plan
+    )
+    simple_polygon_work = markdown_section(simple_polygon_plan, "Work Completed")
+    simple_polygon_verification = markdown_section(
+        simple_polygon_plan, "Verification Completed"
+    )
+    if simple_polygon_status != ["completed"] or not simple_polygon_work:
+        failures.append(
+            "simple polygon ring plan must record completed status and work"
+        )
+    if not simple_polygon_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run|to be recorded)\b",
+        simple_polygon_verification,
+    ):
+        failures.append("simple polygon ring plan must record completed verification")
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "testPolygonRenderingRejectsSelfIntersectingCoordinates",
+        "testPolygonRenderingAcceptsConcaveCoordinates",
+        "testSelfIntersectingPolygonFinalizationClearsDraftCoordinates",
+        "isolated hostile mutations were rejected",
+        "git diff --check",
+    ]:
+        if evidence not in simple_polygon_verification:
+            failures.append(
+                f"simple polygon ring verification must record {evidence}"
+            )
+
+    for path in ["README.md", "SECURITY.md", "VISION.md", "CHANGES.md"]:
+        if "self-intersecting polygon drafts" not in read(path).lower():
+            failures.append(
+                f"{path} must document the self-intersecting polygon draft guard"
             )
 
     location_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)

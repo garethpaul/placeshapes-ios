@@ -1,6 +1,6 @@
 # Simple Polygon Ring Validation
 
-status: planned
+status: completed
 
 ## Context
 
@@ -68,3 +68,37 @@ boundary rather than rendering an ambiguous overlay.
   mutations.
 - Audit exact intended paths, protected project/signing files, generated
   artifacts, credentials, binaries, modes, and whitespace.
+
+## Work Completed
+
+- Required the closed coordinate ring to remain simple after the existing
+  valid, distinct, and non-collinear checks.
+- Added Swift 3-compatible orientation, on-segment, and non-adjacent edge
+  intersection helpers with one shared coordinate tolerance.
+- Added source-level XCTest fixtures for strict crossing, collinear overlap,
+  repeated non-adjacent contact, valid concavity, and rejected-finalization
+  cleanup.
+- Extended the dependency-free checker and synchronized README, security,
+  vision, and changelog guidance without changing project metadata, signing,
+  dependencies, touch collection, or rendering style.
+
+## Verification Completed
+
+- `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  passed from the repository root.
+- The complete gate passed through the absolute Makefile path from an external working directory.
+- The structural checker parsed the workflow YAML, all three plists, workspace
+  and scheme XML, asset JSON, storyboard XML, and README SVG.
+- `testPolygonRenderingRejectsSelfIntersectingCoordinates` records strict
+  crossing and collinear overlap rejection;
+  `testPolygonRenderingAcceptsConcaveCoordinates` preserves a valid concave
+  ring; and `testSelfIntersectingPolygonFinalizationClearsDraftCoordinates`
+  records nil overlay creation plus draft cleanup.
+- Eight isolated hostile mutations were rejected across the simple-ring call,
+  adjacency exemption, strict crossing, collinear contact, repeated-contact
+  regression, concave control, guidance, and completed-plan status.
+- `git diff --check`, exact intended-path review, protected project/signing
+  path checks, generated-artifact inspection, privacy and personal-coordinate
+  screening, binary/mode review, and high-signal credential scanning passed.
+- The Linux host has no Xcode toolchain, so this pass makes no current-Xcode,
+  simulator, or runtime XCTest claim.

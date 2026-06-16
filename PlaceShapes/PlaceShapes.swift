@@ -8,6 +8,7 @@ import UIKit
 import MapKit
 
 class PlaceShapes: UIViewController, MKMapViewDelegate {
+    static let polygonIntersectionTolerance = 0.000000000001
     
     // Map View
     @IBOutlet var mapView:MKMapView!
@@ -32,7 +33,8 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             }
         }
         return hasAtLeastThreeDistinctCoordinates(coordinates) &&
-            hasAtLeastThreeNonCollinearCoordinates(coordinates)
+            hasAtLeastThreeNonCollinearCoordinates(coordinates) &&
+            hasSimplePolygonRing(coordinates)
     }
 
     static func hasAtLeastThreeDistinctCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
@@ -85,6 +87,88 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             }
         }
         return false
+    }
+
+    static func hasSimplePolygonRing(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
+        let coordinateCount = coordinates.count
+        guard coordinateCount >= 3 else {
+            return false
+        }
+
+        for firstEdgeStartIndex in 0..<coordinateCount {
+            let firstEdgeEndIndex = (firstEdgeStartIndex + 1) % coordinateCount
+            for secondEdgeStartIndex in (firstEdgeStartIndex + 1)..<coordinateCount {
+                let secondEdgeEndIndex = (secondEdgeStartIndex + 1) % coordinateCount
+                if firstEdgeEndIndex == secondEdgeStartIndex ||
+                    secondEdgeEndIndex == firstEdgeStartIndex {
+                    continue
+                }
+                if segmentsIntersect(
+                    coordinates[firstEdgeStartIndex],
+                    coordinates[firstEdgeEndIndex],
+                    coordinates[secondEdgeStartIndex],
+                    coordinates[secondEdgeEndIndex]
+                ) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    static func segmentsIntersect(
+        _ firstStart: CLLocationCoordinate2D,
+        _ firstEnd: CLLocationCoordinate2D,
+        _ secondStart: CLLocationCoordinate2D,
+        _ secondEnd: CLLocationCoordinate2D
+    ) -> Bool {
+        let firstStartOrientation = orientation(firstStart, firstEnd, secondStart)
+        let firstEndOrientation = orientation(firstStart, firstEnd, secondEnd)
+        let secondStartOrientation = orientation(secondStart, secondEnd, firstStart)
+        let secondEndOrientation = orientation(secondStart, secondEnd, firstEnd)
+
+        if firstStartOrientation != 0 && firstEndOrientation != 0 &&
+            secondStartOrientation != 0 && secondEndOrientation != 0 &&
+            firstStartOrientation != firstEndOrientation &&
+            secondStartOrientation != secondEndOrientation {
+            return true
+        }
+        if firstStartOrientation == 0 && isCoordinate(secondStart, onSegmentFrom: firstStart, to: firstEnd) {
+            return true
+        }
+        if firstEndOrientation == 0 && isCoordinate(secondEnd, onSegmentFrom: firstStart, to: firstEnd) {
+            return true
+        }
+        if secondStartOrientation == 0 && isCoordinate(firstStart, onSegmentFrom: secondStart, to: secondEnd) {
+            return true
+        }
+        return secondEndOrientation == 0 &&
+            isCoordinate(firstEnd, onSegmentFrom: secondStart, to: secondEnd)
+    }
+
+    static func orientation(
+        _ first: CLLocationCoordinate2D,
+        _ second: CLLocationCoordinate2D,
+        _ third: CLLocationCoordinate2D
+    ) -> Int {
+        let crossProduct =
+            (second.longitude - first.longitude) * (third.latitude - first.latitude) -
+            (second.latitude - first.latitude) * (third.longitude - first.longitude)
+        if abs(crossProduct) <= polygonIntersectionTolerance {
+            return 0
+        }
+        return crossProduct > 0 ? 1 : -1
+    }
+
+    static func isCoordinate(
+        _ coordinate: CLLocationCoordinate2D,
+        onSegmentFrom start: CLLocationCoordinate2D,
+        to end: CLLocationCoordinate2D
+    ) -> Bool {
+        return coordinate.longitude >= min(start.longitude, end.longitude) - polygonIntersectionTolerance &&
+            coordinate.longitude <= max(start.longitude, end.longitude) + polygonIntersectionTolerance &&
+            coordinate.latitude >= min(start.latitude, end.latitude) - polygonIntersectionTolerance &&
+            coordinate.latitude <= max(start.latitude, end.latitude) + polygonIntersectionTolerance
     }
 
     func beginPolygonDraft() {

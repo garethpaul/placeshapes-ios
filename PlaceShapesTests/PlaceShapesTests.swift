@@ -63,7 +63,7 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
     }
 
-    func testPolygonRenderingAcceptsThreeDistinctCoordinatesWithDuplicateEntry() {
+    func testPolygonRenderingRejectsRepeatedNonAdjacentCoordinate() {
         let coordinates = [
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
             CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
@@ -71,7 +71,7 @@ class PlaceShapesTests: XCTestCase {
             CLLocationCoordinate2D(latitude: 37.2, longitude: -122.15),
         ]
 
-        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
     }
 
     func testPolygonRenderingRejectsOnlyTwoDistinctCoordinates() {
@@ -108,6 +108,37 @@ class PlaceShapesTests: XCTestCase {
 
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: horizontalCoordinates))
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))
+    }
+
+    func testPolygonRenderingRejectsSelfIntersectingCoordinates() {
+        let bowTieCoordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
+        ]
+        let overlappingCoordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.7),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -121.8),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.8),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: bowTieCoordinates))
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: overlappingCoordinates))
+    }
+
+    func testPolygonRenderingAcceptsConcaveCoordinates() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.05, longitude: -121.95),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+        ]
+
+        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
     }
 
     func testBeginningPolygonDraftClearsCoordinates() {
@@ -172,6 +203,19 @@ class PlaceShapesTests: XCTestCase {
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
             CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1),
             CLLocationCoordinate2D(latitude: 37.2, longitude: -122.2),
+        ]
+
+        XCTAssertNil(controller.finalizePolygonDraft())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
+    func testSelfIntersectingPolygonFinalizationClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
         ]
 
         XCTAssertNil(controller.finalizePolygonDraft())

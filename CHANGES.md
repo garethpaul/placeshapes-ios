@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-16
+
+- Rejected self-intersecting polygon drafts, including strict crossings,
+  repeated non-adjacent contacts, and collinear overlap, while preserving valid
+  concave polygons.
+
 ## 2026-06-14
 
 - Made every standard Make alias resolve the structural checker from the

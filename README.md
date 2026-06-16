@@ -89,6 +89,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the map returns to normal interaction.
 - Finalized polygon drafts clear the raw coordinate buffer whether the draft is
   too short to render or successfully becomes an `MKPolygon`.
+- Self-intersecting polygon drafts are rejected before `MKPolygon`
+  construction, while valid concave drafts remain supported.
 
 ## Testing and Verification
 
