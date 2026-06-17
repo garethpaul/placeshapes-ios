@@ -91,6 +91,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   too short to render or successfully becomes an `MKPolygon`.
 - Self-intersecting polygon drafts are rejected before `MKPolygon`
   construction, while valid concave drafts remain supported.
+- Zero-length polygon edges, including an explicitly repeated closing vertex,
+  are rejected before `MKPolygon` construction.
 
 ## Testing and Verification
 

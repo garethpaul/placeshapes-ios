@@ -1,6 +1,6 @@
 # Zero-Length Polygon Edge Rejection
 
-status: planned
+status: completed
 
 ## Problem
 
@@ -71,3 +71,33 @@ guidance, and completed plan evidence against isolated hostile mutations.
   an exactly zero-length edge; near-duplicate points remain valid input.
 - The planar predicate remains suitable only for local touch-drawn polygons.
 - This change is stacked on PR #9, which must remain open and merge first.
+
+## Work Completed
+
+- Added an exact coordinate-equality helper and a modulo ring scan that rejects
+  adjacent duplicate vertices, including an explicitly repeated closing vertex.
+- Wired nonzero-edge validation after distinct-coordinate validation and before
+  non-collinearity and simple-ring checks.
+- Added three zero-length edge regressions for adjacent duplicates, closing
+  duplicates, and rejected-finalization draft cleanup while preserving the
+  valid concave polygon control.
+- Extended the static checker and synchronized README, security, vision, and
+  changelog guidance.
+
+## Verification Completed
+
+- All Make aliases passed: `make lint`, `make test`, `make build`, `make verify`,
+  and `make check`.
+- `make -f /absolute/path/Makefile check` passed from an external working directory.
+- Focused structural validation found 24 XCTest methods and protected
+  `testPolygonRenderingRejectsAdjacentDuplicateCoordinate`,
+  `testPolygonRenderingRejectsExplicitClosingCoordinate`, and
+  `testZeroLengthEdgePolygonFinalizationClearsDraftCoordinates`.
+- Six isolated hostile mutations were rejected: equality, closing-edge modulo,
+  validation wiring, adjacent-duplicate regression, guidance, and completed
+  plan status.
+- `python3 -m py_compile scripts/check-baseline.py` and `git diff --check`
+  passed.
+- Xcode, XCTest, simulator, and device execution were not available on the
+  Linux validation host; the pinned hosted macOS workflow remains authoritative
+  for Apple-toolchain execution.

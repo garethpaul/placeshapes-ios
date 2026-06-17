@@ -110,6 +110,28 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))
     }
 
+    func testPolygonRenderingRejectsAdjacentDuplicateCoordinate() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsExplicitClosingCoordinate() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
     func testPolygonRenderingRejectsSelfIntersectingCoordinates() {
         let bowTieCoordinates = [
             CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
@@ -216,6 +238,19 @@ class PlaceShapesTests: XCTestCase {
             CLLocationCoordinate2D(latitude: 37.1, longitude: -121.9),
             CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
             CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
+        ]
+
+        XCTAssertNil(controller.finalizePolygonDraft())
+        XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
+    func testZeroLengthEdgePolygonFinalizationClearsDraftCoordinates() {
+        let controller = PlaceShapes()
+        controller.coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9),
         ]
 
         XCTAssertNil(controller.finalizePolygonDraft())

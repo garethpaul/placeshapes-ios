@@ -38,6 +38,7 @@ Priority:
 - Keep leaving edit mode from retaining polygon draft coordinates
 - Keep finalized polygon drafts from retaining raw coordinate buffers
 - Keep self-intersecting polygon drafts out of MapKit overlay construction
+- Keep zero-length polygon edges out of MapKit overlay construction
 - Keep map view delegate outlet setup safe for unconnected scaffold instances
 - Keep the touch input map outlet guarded before coordinate conversion
 - Keep the no-pods structural validation gate running on pinned hosted macOS

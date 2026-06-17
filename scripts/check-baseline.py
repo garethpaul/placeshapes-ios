@@ -17,6 +17,7 @@ DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.
 LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-make-gates.md"
 NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
 SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
+ZERO_LENGTH_EDGE_PLAN = "docs/plans/2026-06-17-zero-length-polygon-edges.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -56,6 +57,7 @@ REQUIRED = [
     LOCATION_INDEPENDENT_MAKE_PLAN,
     NONCOLLINEAR_COORDINATES_PLAN,
     SIMPLE_POLYGON_PLAN,
+    ZERO_LENGTH_EDGE_PLAN,
     "scripts/check-baseline.py",
     "screenshots/001.png",
 ]
@@ -238,8 +240,9 @@ def main():
         "CLLocationCoordinate2DIsValid(coordinate)",
         "static func hasAtLeastThreeDistinctCoordinates(_ coordinates:",
         "return hasAtLeastThreeDistinctCoordinates(coordinates)",
-        "existingCoordinate.latitude == coordinate.latitude",
-        "existingCoordinate.longitude == coordinate.longitude",
+        "static func coordinatesAreEqual(",
+        "static func hasNonzeroPolygonEdges(_ coordinates:",
+        "hasNonzeroPolygonEdges(coordinates)",
         "if distinctCoordinates.count == 3",
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
@@ -270,10 +273,18 @@ def main():
     validation_markers = [
         "CLLocationCoordinate2DIsValid(coordinate)",
         "return hasAtLeastThreeDistinctCoordinates(coordinates) &&",
+        "hasNonzeroPolygonEdges(coordinates)",
         "hasAtLeastThreeNonCollinearCoordinates(coordinates)",
         "hasSimplePolygonRing(coordinates)",
+        "static func coordinatesAreEqual",
+        "firstCoordinate.latitude == secondCoordinate.latitude &&",
+        "firstCoordinate.longitude == secondCoordinate.longitude",
         "static func hasAtLeastThreeDistinctCoordinates",
         "if distinctCoordinates.count == 3",
+        "static func hasNonzeroPolygonEdges",
+        "guard coordinates.count >= 3 else",
+        "let endIndex = (startIndex + 1) % coordinates.count",
+        "coordinatesAreEqual(coordinates[startIndex], coordinates[endIndex])",
         "static func hasAtLeastThreeNonCollinearCoordinates",
         "let collinearityTolerance = 0.000000000001",
         "if abs(crossProduct) > collinearityTolerance",
@@ -297,7 +308,7 @@ def main():
         for left, right in zip(validation_markers, validation_markers[1:])
     ):
         failures.append(
-            "polygon validation must check coordinate ranges, distinct points, non-collinearity, and a simple ring in order"
+            "polygon validation must check coordinate ranges, distinct points, nonzero edges, non-collinearity, and a simple ring in order"
         )
     if swift.count("polygonIntersectionTolerance = 0.000000000001") != 1:
         failures.append("simple polygon validation must use one reviewed intersection tolerance")
@@ -317,6 +328,8 @@ def main():
         "testPolygonRenderingRejectsOnlyTwoDistinctCoordinates",
         "testPolygonRenderingRejectsOneRepeatedCoordinate",
         "testPolygonRenderingRejectsDistinctCollinearCoordinates",
+        "testPolygonRenderingRejectsAdjacentDuplicateCoordinate",
+        "testPolygonRenderingRejectsExplicitClosingCoordinate",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: horizontalCoordinates))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))",
         "testPolygonRenderingRejectsSelfIntersectingCoordinates",
@@ -336,6 +349,7 @@ def main():
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
         "testCollinearPolygonFinalizationClearsDraftCoordinates",
         "testSelfIntersectingPolygonFinalizationClearsDraftCoordinates",
+        "testZeroLengthEdgePolygonFinalizationClearsDraftCoordinates",
         "testInvalidCoordinateFinalizationClearsDraftCoordinates",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
@@ -681,6 +695,47 @@ def main():
         if "self-intersecting polygon drafts" not in read(path).lower():
             failures.append(
                 f"{path} must document the self-intersecting polygon draft guard"
+            )
+        if "zero-length polygon edges" not in read(path).lower():
+            failures.append(
+                f"{path} must document the zero-length polygon edge guard"
+            )
+
+    zero_length_edge_plan = read(ZERO_LENGTH_EDGE_PLAN)
+    zero_length_edge_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", zero_length_edge_plan
+    )
+    zero_length_edge_work = markdown_section(zero_length_edge_plan, "Work Completed")
+    zero_length_edge_verification = markdown_section(
+        zero_length_edge_plan, "Verification Completed"
+    )
+    if zero_length_edge_status != ["completed"] or not zero_length_edge_work:
+        failures.append(
+            "zero-length polygon edge plan must record completed status and work"
+        )
+    if not zero_length_edge_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run|to be recorded)\b",
+        zero_length_edge_verification,
+    ):
+        failures.append(
+            "zero-length polygon edge plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "testPolygonRenderingRejectsAdjacentDuplicateCoordinate",
+        "testPolygonRenderingRejectsExplicitClosingCoordinate",
+        "testZeroLengthEdgePolygonFinalizationClearsDraftCoordinates",
+        "Six isolated hostile mutations were rejected",
+        "git diff --check",
+    ]:
+        if evidence not in zero_length_edge_verification:
+            failures.append(
+                f"zero-length polygon edge verification must record {evidence}"
             )
 
     location_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)

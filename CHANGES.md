@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Rejected zero-length polygon edges from adjacent duplicate coordinates and
+  explicitly repeated closing vertices.
+
 ## 2026-06-16
 
 - Rejected self-intersecting polygon drafts, including strict crossings,

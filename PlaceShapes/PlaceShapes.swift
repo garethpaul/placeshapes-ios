@@ -33,8 +33,17 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             }
         }
         return hasAtLeastThreeDistinctCoordinates(coordinates) &&
+            hasNonzeroPolygonEdges(coordinates) &&
             hasAtLeastThreeNonCollinearCoordinates(coordinates) &&
             hasSimplePolygonRing(coordinates)
+    }
+
+    static func coordinatesAreEqual(
+        _ firstCoordinate: CLLocationCoordinate2D,
+        _ secondCoordinate: CLLocationCoordinate2D
+    ) -> Bool {
+        return firstCoordinate.latitude == secondCoordinate.latitude &&
+            firstCoordinate.longitude == secondCoordinate.longitude
     }
 
     static func hasAtLeastThreeDistinctCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
@@ -42,8 +51,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         for coordinate in coordinates {
             var alreadyRecorded = false
             for existingCoordinate in distinctCoordinates {
-                if existingCoordinate.latitude == coordinate.latitude &&
-                    existingCoordinate.longitude == coordinate.longitude {
+                if coordinatesAreEqual(existingCoordinate, coordinate) {
                     alreadyRecorded = true
                     break
                 }
@@ -56,6 +64,20 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             }
         }
         return false
+    }
+
+    static func hasNonzeroPolygonEdges(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
+        guard coordinates.count >= 3 else {
+            return false
+        }
+
+        for startIndex in 0..<coordinates.count {
+            let endIndex = (startIndex + 1) % coordinates.count
+            if coordinatesAreEqual(coordinates[startIndex], coordinates[endIndex]) {
+                return false
+            }
+        }
+        return true
     }
 
     static func hasAtLeastThreeNonCollinearCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {

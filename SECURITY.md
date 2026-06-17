@@ -60,6 +60,8 @@ or successful touch-end handling so private place data is not retained longer
 than needed.
 Self-intersecting polygon drafts should fail closed before overlay construction
 so malformed local geometry is not rendered or retained.
+Zero-length polygon edges, including an explicitly repeated closing vertex,
+should fail closed before overlay construction.
 Map view delegate outlet setup should tolerate unconnected scaffold instances
 used by tests or static review.
 The touch input map outlet should clear partial coordinates and return safely
