@@ -163,6 +163,47 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
     }
 
+    func testPolygonRenderingAcceptsSmallNonCollinearCoordinates() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+            CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9999999),
+            CLLocationCoordinate2D(latitude: 37.0000001, longitude: -121.9999999),
+            CLLocationCoordinate2D(latitude: 37.0000001, longitude: -122.0),
+        ]
+
+        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingAcceptsSimpleDatelineCrossingCoordinates() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 10.0, longitude: 179.0),
+            CLLocationCoordinate2D(latitude: 11.0, longitude: 179.0),
+            CLLocationCoordinate2D(latitude: 10.5, longitude: -179.5),
+            CLLocationCoordinate2D(latitude: 11.0, longitude: -179.0),
+            CLLocationCoordinate2D(latitude: 10.0, longitude: -179.0),
+        ]
+
+        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testPolygonRenderingRejectsEquivalentDatelineDuplicateCoordinate() {
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: 0.0, longitude: 180.0),
+            CLLocationCoordinate2D(latitude: 1.0, longitude: 179.0),
+            CLLocationCoordinate2D(latitude: 0.0, longitude: -180.0),
+            CLLocationCoordinate2D(latitude: -1.0, longitude: 179.0),
+        ]
+
+        XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))
+    }
+
+    func testEquivalentDatelineLongitudesAreEqual() {
+        let positiveDateline = CLLocationCoordinate2D(latitude: 0.0, longitude: 180.0)
+        let negativeDateline = CLLocationCoordinate2D(latitude: 0.0, longitude: -180.0)
+
+        XCTAssertTrue(PlaceShapes.coordinatesAreEqual(positiveDateline, negativeDateline))
+    }
+
     func testBeginningPolygonDraftClearsCoordinates() {
         let controller = PlaceShapes()
         controller.coordinates = [

@@ -32,10 +32,11 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 return false
             }
         }
+        let validationCoordinates = coordinatesWithUnwrappedLongitudes(coordinates)
         return hasAtLeastThreeDistinctCoordinates(coordinates) &&
             hasNonzeroPolygonEdges(coordinates) &&
-            hasAtLeastThreeNonCollinearCoordinates(coordinates) &&
-            hasSimplePolygonRing(coordinates)
+            hasAtLeastThreeNonCollinearCoordinates(validationCoordinates) &&
+            hasSimplePolygonRing(validationCoordinates)
     }
 
     static func coordinatesAreEqual(
@@ -43,7 +44,36 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         _ secondCoordinate: CLLocationCoordinate2D
     ) -> Bool {
         return firstCoordinate.latitude == secondCoordinate.latitude &&
-            firstCoordinate.longitude == secondCoordinate.longitude
+            canonicalLongitude(firstCoordinate.longitude) == canonicalLongitude(secondCoordinate.longitude)
+    }
+
+    static func canonicalLongitude(_ longitude: CLLocationDegrees) -> CLLocationDegrees {
+        return longitude == 180.0 ? -180.0 : longitude
+    }
+
+    static func coordinatesWithUnwrappedLongitudes(
+        _ coordinates: [CLLocationCoordinate2D]
+    ) -> [CLLocationCoordinate2D] {
+        guard let firstCoordinate = coordinates.first else {
+            return []
+        }
+
+        var unwrappedCoordinates = [firstCoordinate]
+        for coordinate in coordinates.dropFirst() {
+            var longitude = coordinate.longitude
+            let previousLongitude = unwrappedCoordinates[unwrappedCoordinates.count - 1].longitude
+            while longitude - previousLongitude > 180.0 {
+                longitude -= 360.0
+            }
+            while longitude - previousLongitude < -180.0 {
+                longitude += 360.0
+            }
+            unwrappedCoordinates.append(CLLocationCoordinate2D(
+                latitude: coordinate.latitude,
+                longitude: longitude
+            ))
+        }
+        return unwrappedCoordinates
     }
 
     static func hasAtLeastThreeDistinctCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
@@ -97,14 +127,8 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             return false
         }
 
-        let collinearityTolerance = 0.000000000001
         for coordinate in coordinates {
-            let crossProduct =
-                (distinctSecondCoordinate.longitude - firstCoordinate.longitude) *
-                (coordinate.latitude - firstCoordinate.latitude) -
-                (distinctSecondCoordinate.latitude - firstCoordinate.latitude) *
-                (coordinate.longitude - firstCoordinate.longitude)
-            if abs(crossProduct) > collinearityTolerance {
+            if orientation(firstCoordinate, distinctSecondCoordinate, coordinate) != 0 {
                 return true
             }
         }
@@ -176,7 +200,10 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         let crossProduct =
             (second.longitude - first.longitude) * (third.latitude - first.latitude) -
             (second.latitude - first.latitude) * (third.longitude - first.longitude)
-        if abs(crossProduct) <= polygonIntersectionTolerance {
+        let crossProductScale =
+            abs((second.longitude - first.longitude) * (third.latitude - first.latitude)) +
+            abs((second.latitude - first.latitude) * (third.longitude - first.longitude))
+        if abs(crossProduct) <= crossProductScale * polygonIntersectionTolerance {
             return 0
         }
         return crossProduct > 0 ? 1 : -1
@@ -312,13 +339,21 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             }
             
             // Remove existing polygon
-            touchMapView.remove(polygon)
+            #if swift(>=4.2)
+                touchMapView.removeOverlay(polygon)
+            #else
+                touchMapView.remove(polygon)
+            #endif
             
             // Create new polygon
             polygon = nextPolygon
             
             // Add polygon to map
-            touchMapView.add(polygon)
+            #if swift(>=4.2)
+                touchMapView.addOverlay(polygon)
+            #else
+                touchMapView.add(polygon)
+            #endif
         }
     }
     

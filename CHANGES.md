@@ -1,5 +1,15 @@
 # Changes
 
+## 2026-06-19
+
+- Added hosted native XCTest coverage and dual Swift 3/modern MapKit overlay API
+  spellings so current Xcode compiles the legacy sample, with a shared scheme
+  that exposes the test action on clean checkout hosts.
+- Replaced fixed-area geometry tolerance with scale-relative orientation checks,
+  canonicalized the `180`/`-180` meridian, and unwrapped antimeridian-crossing
+  drafts before polygon topology validation.
+- Reconciled the local PlaceShapes screenshot into the maintained README.
+
 ## 2026-06-17
 
 - Rejected zero-length polygon edges from adjacent duplicate coordinates and

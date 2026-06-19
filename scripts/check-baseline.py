@@ -30,6 +30,7 @@ REQUIRED = [
     "Podfile",
     "PlaceShapes.xcodeproj/project.pbxproj",
     "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+    "PlaceShapes.xcodeproj/xcshareddata/xcschemes/PlaceShapes.xcscheme",
     "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/PlaceShapes.xcscheme",
     "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/xcschememanagement.plist",
     "PlaceShapes/Info.plist",
@@ -59,6 +60,7 @@ REQUIRED = [
     SIMPLE_POLYGON_PLAN,
     ZERO_LENGTH_EDGE_PLAN,
     "scripts/check-baseline.py",
+    "scripts/run-xcode-tests.sh",
     "screenshots/001.png",
 ]
 
@@ -90,6 +92,8 @@ def main():
         "lint: static-check",
         "test: static-check",
         "build: static-check",
+        'native-test: scripts/run-xcode-tests.sh',
+        '"$(REPO_ROOT)/scripts/run-xcode-tests.sh"',
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
@@ -106,6 +110,7 @@ def main():
         "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405",
         'python-version: "3.12"',
         "run: make check",
+        "run: make native-test",
     ]:
         if expected not in workflow:
             failures.append(f"Check workflow must keep {expected}")
@@ -164,13 +169,24 @@ def main():
 
     for path in [
         "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+        "PlaceShapes.xcodeproj/xcshareddata/xcschemes/PlaceShapes.xcscheme",
         "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/PlaceShapes.xcscheme",
         "docs/readme-overview.svg",
     ]:
         try:
             ET.parse(ROOT / path)
-        except ET.ParseError as error:
+        except (OSError, ET.ParseError) as error:
             failures.append(f"{path} must parse as XML: {error}")
+
+    shared_scheme = read("PlaceShapes.xcodeproj/xcshareddata/xcschemes/PlaceShapes.xcscheme")
+    for phrase in [
+        "<TestAction",
+        "<TestableReference",
+        'BlueprintName = "PlaceShapesTests"',
+        'buildForTesting = "YES"',
+    ]:
+        if phrase not in shared_scheme:
+            failures.append(f"shared PlaceShapes scheme must include {phrase}")
 
     if (ROOT / "screenshots/001.png").read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
         failures.append("screenshots/001.png must remain a PNG image")
@@ -255,6 +271,10 @@ def main():
         "guard PlaceShapes.shouldRenderPolygon",
         "guard PlaceShapes.shouldRenderPolygon(coordinates: coordinates)",
         "guard let nextPolygon = finalizePolygonDraft()",
+        "#if swift(>=4.2)",
+        "touchMapView.removeOverlay(polygon)",
+        "touchMapView.addOverlay(polygon)",
+        "#else",
         "touchMapView.remove(polygon)",
         "touchMapView.add(polygon)",
         "var draftCoordinates = coordinates",
@@ -272,13 +292,18 @@ def main():
     ]
     validation_markers = [
         "CLLocationCoordinate2DIsValid(coordinate)",
+        "let validationCoordinates = coordinatesWithUnwrappedLongitudes(coordinates)",
         "return hasAtLeastThreeDistinctCoordinates(coordinates) &&",
         "hasNonzeroPolygonEdges(coordinates)",
-        "hasAtLeastThreeNonCollinearCoordinates(coordinates)",
-        "hasSimplePolygonRing(coordinates)",
+        "hasAtLeastThreeNonCollinearCoordinates(validationCoordinates)",
+        "hasSimplePolygonRing(validationCoordinates)",
         "static func coordinatesAreEqual",
         "firstCoordinate.latitude == secondCoordinate.latitude &&",
-        "firstCoordinate.longitude == secondCoordinate.longitude",
+        "canonicalLongitude(firstCoordinate.longitude) == canonicalLongitude(secondCoordinate.longitude)",
+        "static func canonicalLongitude",
+        "static func coordinatesWithUnwrappedLongitudes",
+        "while longitude - previousLongitude > 180.0",
+        "while longitude - previousLongitude < -180.0",
         "static func hasAtLeastThreeDistinctCoordinates",
         "if distinctCoordinates.count == 3",
         "static func hasNonzeroPolygonEdges",
@@ -286,8 +311,7 @@ def main():
         "let endIndex = (startIndex + 1) % coordinates.count",
         "coordinatesAreEqual(coordinates[startIndex], coordinates[endIndex])",
         "static func hasAtLeastThreeNonCollinearCoordinates",
-        "let collinearityTolerance = 0.000000000001",
-        "if abs(crossProduct) > collinearityTolerance",
+        "if orientation(firstCoordinate, distinctSecondCoordinate, coordinate) != 0",
         "static func hasSimplePolygonRing",
         "let firstEdgeEndIndex = (firstEdgeStartIndex + 1) % coordinateCount",
         "let secondEdgeEndIndex = (secondEdgeStartIndex + 1) % coordinateCount",
@@ -300,6 +324,8 @@ def main():
         "secondStartOrientation == 0 && isCoordinate(firstStart",
         "secondEndOrientation == 0 &&\n            isCoordinate(firstEnd",
         "static func orientation(",
+        "let crossProductScale =",
+        "if abs(crossProduct) <= crossProductScale * polygonIntersectionTolerance",
         "static func isCoordinate(",
     ]
     if any(marker not in coordinate_validation_source for marker in validation_markers) or not all(
@@ -336,6 +362,10 @@ def main():
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: bowTieCoordinates))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: overlappingCoordinates))",
         "testPolygonRenderingAcceptsConcaveCoordinates",
+        "testPolygonRenderingAcceptsSmallNonCollinearCoordinates",
+        "testPolygonRenderingAcceptsSimpleDatelineCrossingCoordinates",
+        "testPolygonRenderingRejectsEquivalentDatelineDuplicateCoordinate",
+        "testEquivalentDatelineLongitudesAreEqual",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
@@ -387,6 +417,7 @@ def main():
         "make test",
         "make build",
         "make verify",
+        "make native-test",
         "absolute Makefile path works from another directory",
         "MapKit",
         "local by default",
@@ -405,12 +436,15 @@ def main():
         "map view delegate outlet",
         "touch input map outlet",
         "hosted macOS",
+        "native XCTest",
         "credential-free signing metadata",
         "structural validation",
         "CLLocationCoordinate2DIsValid",
         "out-of-range",
         "three distinct",
         "non-collinear",
+        "antimeridian",
+        "local PlaceShapes screenshot",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")

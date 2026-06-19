@@ -93,6 +93,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   construction, while valid concave drafts remain supported.
 - Zero-length polygon edges, including an explicitly repeated closing vertex,
   are rejected before `MKPolygon` construction.
+- Longitude validation treats `180` and `-180` as the same meridian and unwraps
+  antimeridian-crossing drafts before planar intersection checks.
+
+## Example
+
+The local PlaceShapes screenshot shows a polygon drawn over the map:
+
+![PlaceShapes polygon drawn on a map](screenshots/001.png)
 
 ## Testing and Verification
 
@@ -101,6 +109,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make test`
 - `make build`
 - `make verify`
+- `make native-test`
 - `python3 scripts/check-baseline.py`
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination on a macOS machine with the matching Apple toolchain
 
@@ -108,6 +117,8 @@ The Make lint, test, build, verify, and check targets all run the static
 baseline on hosts without the matching legacy Xcode toolchain.
 Pinned hosted macOS structural validation runs the same `make check` contract
 on Python 3.12 without installing pods, signing, or invoking location services.
+The same hosted job runs native XCTest on an available iPhone simulator with a
+Swift 5 compatibility override, while the project retains its Swift 3 metadata.
 Credential-free signing metadata is enforced in the Xcode project: no Apple
 development team, provisioning profile, entitlements path, or account-specific
 signing identity may be committed.
