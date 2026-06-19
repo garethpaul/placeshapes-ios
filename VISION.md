@@ -28,15 +28,23 @@ Priority:
 - Avoid changing gesture behavior without a sample app check
 - Keep drawn coordinates local by default
 - Keep non-placeholder XCTest coverage for polygon creation rules
+- Keep invalid latitude and longitude values from reaching polygon construction
+- Keep degenerate drafts with fewer than three distinct coordinates from
+  reaching polygon construction
+- Keep distinct but collinear coordinates from producing zero-area polygons
 - Keep starting polygon drafts from reusing stale coordinates
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes
 - Keep leaving edit mode from retaining polygon draft coordinates
 - Keep finalized polygon drafts from retaining raw coordinate buffers
+- Keep self-intersecting polygon drafts out of MapKit overlay construction
+- Keep zero-length polygon edges out of MapKit overlay construction
 - Keep map view delegate outlet setup safe for unconnected scaffold instances
 - Keep the touch input map outlet guarded before coordinate conversion
 - Keep the no-pods structural validation gate running on pinned hosted macOS
 - Keep the CocoaPods platform matched to the Xcode iOS deployment target
+- Keep credential-free signing metadata free of Apple account, provisioning,
+  entitlements, and certificate-specific values
 - Keep plist bundle identifiers and plist package types explicit for targets
 - Keep standard Make gate aliases available for local static verification
 
@@ -45,7 +53,6 @@ Next priorities:
 - Document supported Xcode, Swift, and iOS versions
 - Add a small sample app flow that demonstrates importing `PlaceShapes`
 - Add tests or manual verification notes for polygon creation
-- Add more invalid-coordinate fixtures for drawing helpers
 - Clarify how callers can read, reset, and style drawn shapes
 - Add Xcode/simulator verification notes when the matching Apple toolchain is
   available

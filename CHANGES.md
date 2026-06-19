@@ -1,5 +1,43 @@
 # Changes
 
+## 2026-06-19
+
+- Added hosted native XCTest coverage and dual Swift 3/modern MapKit overlay API
+  spellings so current Xcode compiles the legacy sample, with a shared scheme
+  that exposes the test action on clean checkout hosts.
+- Replaced fixed-area geometry tolerance with scale-relative orientation checks,
+  canonicalized the `180`/`-180` meridian, and unwrapped antimeridian-crossing
+  drafts before polygon topology validation.
+- Reconciled the local PlaceShapes screenshot into the maintained README.
+
+## 2026-06-17
+
+- Rejected zero-length polygon edges from adjacent duplicate coordinates and
+  explicitly repeated closing vertices.
+
+## 2026-06-16
+
+- Rejected self-intersecting polygon drafts, including strict crossings,
+  repeated non-adjacent contacts, and collinear overlap, while preserving valid
+  concave polygons.
+
+## 2026-06-14
+
+- Made every standard Make alias resolve the structural checker from the
+  repository root, including external absolute-Makefile calls.
+- Rejected polygon drafts whose valid, distinct coordinates are all collinear,
+  and replaced accepted zero-area fixtures with non-collinear controls.
+
+## 2026-06-13
+
+- Rejected degenerate polygon drafts containing fewer than three distinct valid
+  coordinates, even when the raw coordinate count is three or greater.
+- Rejected out-of-range Core Location coordinates before polygon construction
+  and added valid, invalid-latitude, invalid-longitude, and draft-clearing tests.
+- Added a structural guard for credential-free signing metadata that rejects
+  Apple development teams, provisioning profiles, entitlements paths, and
+  account-specific signing identities.
+
 ## 2026-06-09
 
 - Added an explicit start-draft helper and test so new polygon drafts clear

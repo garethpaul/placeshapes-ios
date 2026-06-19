@@ -43,6 +43,10 @@ sharing behavior should include the code path and whether user consent is
 visible.
 Keep non-placeholder XCTest coverage around coordinate-count rules so malformed
 input remains predictable.
+Polygon construction should require at least three distinct valid coordinates;
+repeated points must not turn a one- or two-point draft into an accepted shape.
+Polygon construction should also require non-collinear coordinates so distinct
+points on one line cannot produce a zero-area overlay.
 Starting polygon drafts should clear stale coordinates before collecting the
 next touch path.
 Cancelled touches should clear in-progress polygon draft coordinates so stale
@@ -54,6 +58,10 @@ normal map interaction resumes.
 Finalized polygon drafts should clear the raw coordinate buffer after invalid
 or successful touch-end handling so private place data is not retained longer
 than needed.
+Self-intersecting polygon drafts should fail closed before overlay construction
+so malformed local geometry is not rendered or retained.
+Zero-length polygon edges, including an explicitly repeated closing vertex,
+should fail closed before overlay construction.
 Map view delegate outlet setup should tolerate unconnected scaffold instances
 used by tests or static review.
 The touch input map outlet should clear partial coordinates and return safely
@@ -72,6 +80,8 @@ before changing project metadata, MapKit drawing behavior, privacy docs, or
 CocoaPods configuration.
 Pinned, read-only hosted macOS structural validation runs without credentials,
 pod installation, signing, network calls, or location-service access.
+Keep credential-free signing metadata free of Apple development team IDs,
+provisioning profiles, entitlements paths, and account-specific certificates.
 
 ## Safe Research Guidelines
 

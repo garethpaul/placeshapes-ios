@@ -11,7 +11,15 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = "docs/plans/2026-06-08-placeshapes-baseline.md"
 HOSTED_VALIDATION_PLAN = "docs/plans/2026-06-10-hosted-structural-validation.md"
+SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.md"
+INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md"
+DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.md"
+LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-make-gates.md"
+NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
+SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
+ZERO_LENGTH_EDGE_PLAN = "docs/plans/2026-06-17-zero-length-polygon-edges.md"
 REQUIRED = [
+    ".github/CODEOWNERS",
     ".github/workflows/check.yml",
     ".gitignore",
     "CHANGES.md",
@@ -22,6 +30,7 @@ REQUIRED = [
     "Podfile",
     "PlaceShapes.xcodeproj/project.pbxproj",
     "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+    "PlaceShapes.xcodeproj/xcshareddata/xcschemes/PlaceShapes.xcscheme",
     "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/PlaceShapes.xcscheme",
     "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/xcschememanagement.plist",
     "PlaceShapes/Info.plist",
@@ -43,13 +52,29 @@ REQUIRED = [
     "docs/plans/2026-06-10-map-view-delegate-outlet.md",
     "docs/plans/2026-06-10-touch-input-map-outlet.md",
     HOSTED_VALIDATION_PLAN,
+    SIGNING_METADATA_PLAN,
+    INVALID_COORDINATES_PLAN,
+    DISTINCT_COORDINATES_PLAN,
+    LOCATION_INDEPENDENT_MAKE_PLAN,
+    NONCOLLINEAR_COORDINATES_PLAN,
+    SIMPLE_POLYGON_PLAN,
+    ZERO_LENGTH_EDGE_PLAN,
     "scripts/check-baseline.py",
+    "scripts/run-xcode-tests.sh",
     "screenshots/001.png",
 ]
 
 
 def read(path):
     return (ROOT / path).read_text(encoding="utf-8", errors="replace")
+
+
+def markdown_section(text, heading):
+    match = re.search(
+        rf"(?ms)^## {re.escape(heading)}\s*$\n(.*?)(?=^## |\Z)",
+        text,
+    )
+    return match.group(1).strip() if match else ""
 
 
 def main():
@@ -60,29 +85,50 @@ def main():
 
     makefile = read("Makefile")
     for phrase in [
-        "python3 scripts/check-baseline.py",
+        "override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        'python3 "$(REPO_ROOT)/scripts/check-baseline.py"',
         "check: verify",
         "verify: static-check",
         "lint: static-check",
         "test: static-check",
         "build: static-check",
+        'native-test: scripts/run-xcode-tests.sh',
+        '"$(REPO_ROOT)/scripts/run-xcode-tests.sh"',
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
 
     workflow = read(".github/workflows/check.yml")
+    codeowners = read(".github/CODEOWNERS")
     for expected in [
         "permissions:\n  contents: read",
         "cancel-in-progress: true",
         "runs-on: macos-15",
         "timeout-minutes: 10",
         "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10",
+        "persist-credentials: false",
         "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405",
         'python-version: "3.12"',
         "run: make check",
+        "run: make native-test",
     ]:
         if expected not in workflow:
             failures.append(f"Check workflow must keep {expected}")
+    if workflow.count("actions/checkout@") != 1:
+        failures.append("Check workflow must use exactly one checkout action")
+    if workflow.count("persist-credentials:") != 1:
+        failures.append("Check workflow must set checkout credential persistence exactly once")
+    if workflow.count("persist-credentials: false") != 1:
+        failures.append("Check workflow must disable checkout credential persistence")
+    workflow_files = sorted(
+        str(path.relative_to(ROOT))
+        for path in (ROOT / ".github/workflows").rglob("*")
+        if path.is_file()
+    )
+    if workflow_files != [".github/workflows/check.yml"]:
+        failures.append("check.yml must be the repository's only hosted workflow")
+    if codeowners.strip() != "* @garethpaul":
+        failures.append("CODEOWNERS must assign the repository to @garethpaul")
 
     gitignore = read(".gitignore")
     for phrase in [
@@ -123,13 +169,24 @@ def main():
 
     for path in [
         "PlaceShapes.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+        "PlaceShapes.xcodeproj/xcshareddata/xcschemes/PlaceShapes.xcscheme",
         "PlaceShapes.xcodeproj/xcuserdata/gpj.xcuserdatad/xcschemes/PlaceShapes.xcscheme",
         "docs/readme-overview.svg",
     ]:
         try:
             ET.parse(ROOT / path)
-        except ET.ParseError as error:
+        except (OSError, ET.ParseError) as error:
             failures.append(f"{path} must parse as XML: {error}")
+
+    shared_scheme = read("PlaceShapes.xcodeproj/xcshareddata/xcschemes/PlaceShapes.xcscheme")
+    for phrase in [
+        "<TestAction",
+        "<TestableReference",
+        'BlueprintName = "PlaceShapesTests"',
+        'buildForTesting = "YES"',
+    ]:
+        if phrase not in shared_scheme:
+            failures.append(f"shared PlaceShapes scheme must include {phrase}")
 
     if (ROOT / "screenshots/001.png").read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
         failures.append("screenshots/001.png must remain a PNG image")
@@ -142,6 +199,42 @@ def main():
         failures.append("Podfile should not add third-party pods without updating the baseline")
 
     pbxproj = read("PlaceShapes.xcodeproj/project.pbxproj")
+    signing_settings = []
+    for line in pbxproj.splitlines():
+        match = re.match(
+            r'^\s*"?([A-Z][A-Z0-9_]*)(?:\[[^]]+\])?"?\s*=\s*(.*?);\s*$',
+            line,
+        )
+        if match:
+            signing_settings.append(match.groups())
+    forbidden_signing_settings = {
+        "CODE_SIGN_ENTITLEMENTS",
+        "DEVELOPMENT_TEAM",
+        "PROVISIONING_PROFILE",
+        "PROVISIONING_PROFILE_SPECIFIER",
+    }
+    present_forbidden_settings = sorted(
+        name for name, _ in signing_settings if name in forbidden_signing_settings
+    )
+    if present_forbidden_settings:
+        failures.append(
+            "Xcode project must not contain account-specific signing settings: "
+            + ", ".join(present_forbidden_settings)
+        )
+    signing_identities = [
+        value for name, value in signing_settings if name == "CODE_SIGN_IDENTITY"
+    ]
+    expected_signing_identities = [
+        '"iPhone Developer"',
+        '"iPhone Developer"',
+        '""',
+        '""',
+    ]
+    if signing_identities != expected_signing_identities:
+        failures.append(
+            "Xcode project must retain only its two generic and two empty "
+            "signing identities"
+        )
     for phrase in [
         "PlaceShapes.framework",
         "PlaceShapesTests.xctest",
@@ -159,6 +252,14 @@ def main():
         "MKMapViewDelegate",
         "MKPolygonRenderer",
         "shouldRenderPolygon(coordinateCount:",
+        "static func shouldRenderPolygon(coordinates:",
+        "CLLocationCoordinate2DIsValid(coordinate)",
+        "static func hasAtLeastThreeDistinctCoordinates(_ coordinates:",
+        "return hasAtLeastThreeDistinctCoordinates(coordinates)",
+        "static func coordinatesAreEqual(",
+        "static func hasNonzeroPolygonEdges(_ coordinates:",
+        "hasNonzeroPolygonEdges(coordinates)",
+        "if distinctCoordinates.count == 3",
         "func beginPolygonDraft()",
         "func cancelPolygonDraft()",
         "func mapViewForTouchInput() -> MKMapView?",
@@ -168,7 +269,12 @@ def main():
         "mapView?.delegate = self",
         "coordinates.count",
         "guard PlaceShapes.shouldRenderPolygon",
+        "guard PlaceShapes.shouldRenderPolygon(coordinates: coordinates)",
         "guard let nextPolygon = finalizePolygonDraft()",
+        "#if swift(>=4.2)",
+        "touchMapView.removeOverlay(polygon)",
+        "touchMapView.addOverlay(polygon)",
+        "#else",
         "touchMapView.remove(polygon)",
         "touchMapView.add(polygon)",
         "var draftCoordinates = coordinates",
@@ -180,12 +286,87 @@ def main():
             failures.append(f"PlaceShapes.swift must include {phrase}")
     if swift.count("guard let touchMapView = mapViewForTouchInput() else") != 3:
         failures.append("all three active touch callbacks must guard the map view outlet")
+    coordinate_validation_source = swift[
+        swift.find("static func shouldRenderPolygon(coordinates:"):
+        swift.find("func beginPolygonDraft()")
+    ]
+    validation_markers = [
+        "CLLocationCoordinate2DIsValid(coordinate)",
+        "let validationCoordinates = coordinatesWithUnwrappedLongitudes(coordinates)",
+        "return hasAtLeastThreeDistinctCoordinates(coordinates) &&",
+        "hasNonzeroPolygonEdges(coordinates)",
+        "hasAtLeastThreeNonCollinearCoordinates(validationCoordinates)",
+        "hasSimplePolygonRing(validationCoordinates)",
+        "static func coordinatesAreEqual",
+        "firstCoordinate.latitude == secondCoordinate.latitude &&",
+        "canonicalLongitude(firstCoordinate.longitude) == canonicalLongitude(secondCoordinate.longitude)",
+        "static func canonicalLongitude",
+        "static func coordinatesWithUnwrappedLongitudes",
+        "while longitude - previousLongitude > 180.0",
+        "while longitude - previousLongitude < -180.0",
+        "static func hasAtLeastThreeDistinctCoordinates",
+        "if distinctCoordinates.count == 3",
+        "static func hasNonzeroPolygonEdges",
+        "guard coordinates.count >= 3 else",
+        "let endIndex = (startIndex + 1) % coordinates.count",
+        "coordinatesAreEqual(coordinates[startIndex], coordinates[endIndex])",
+        "static func hasAtLeastThreeNonCollinearCoordinates",
+        "if orientation(firstCoordinate, distinctSecondCoordinate, coordinate) != 0",
+        "static func hasSimplePolygonRing",
+        "let firstEdgeEndIndex = (firstEdgeStartIndex + 1) % coordinateCount",
+        "let secondEdgeEndIndex = (secondEdgeStartIndex + 1) % coordinateCount",
+        "if firstEdgeEndIndex == secondEdgeStartIndex ||\n                    secondEdgeEndIndex == firstEdgeStartIndex",
+        "if segmentsIntersect(",
+        "static func segmentsIntersect(",
+        "firstStartOrientation != 0 && firstEndOrientation != 0",
+        "firstStartOrientation == 0 && isCoordinate(secondStart",
+        "firstEndOrientation == 0 && isCoordinate(secondEnd",
+        "secondStartOrientation == 0 && isCoordinate(firstStart",
+        "secondEndOrientation == 0 &&\n            isCoordinate(firstEnd",
+        "static func orientation(",
+        "let crossProductScale =",
+        "if abs(crossProduct) <= crossProductScale * polygonIntersectionTolerance",
+        "static func isCoordinate(",
+    ]
+    if any(marker not in coordinate_validation_source for marker in validation_markers) or not all(
+        coordinate_validation_source.find(left)
+        < coordinate_validation_source.find(right)
+        for left, right in zip(validation_markers, validation_markers[1:])
+    ):
+        failures.append(
+            "polygon validation must check coordinate ranges, distinct points, nonzero edges, non-collinearity, and a simple ring in order"
+        )
+    if swift.count("polygonIntersectionTolerance = 0.000000000001") != 1:
+        failures.append("simple polygon validation must use one reviewed intersection tolerance")
     for phrase in [
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: 2))",
         "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinateCount: 3))",
+        "testPolygonRenderingAcceptsValidCoordinates",
+        "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
+        "testPolygonRenderingRejectsInvalidLatitude",
+        "CLLocationCoordinate2D(latitude: 91.0, longitude: -122.1)",
+        "testPolygonRenderingRejectsInvalidLongitude",
+        "CLLocationCoordinate2D(latitude: 37.1, longitude: 181.0)",
+        "testPolygonRenderingRejectsRepeatedNonAdjacentCoordinate",
+        "testPolygonRenderingRejectsOnlyTwoDistinctCoordinates",
+        "testPolygonRenderingRejectsOneRepeatedCoordinate",
+        "testPolygonRenderingRejectsDistinctCollinearCoordinates",
+        "testPolygonRenderingRejectsAdjacentDuplicateCoordinate",
+        "testPolygonRenderingRejectsExplicitClosingCoordinate",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: horizontalCoordinates))",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: diagonalCoordinates))",
+        "testPolygonRenderingRejectsSelfIntersectingCoordinates",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: bowTieCoordinates))",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: overlappingCoordinates))",
+        "testPolygonRenderingAcceptsConcaveCoordinates",
+        "testPolygonRenderingAcceptsSmallNonCollinearCoordinates",
+        "testPolygonRenderingAcceptsSimpleDatelineCrossingCoordinates",
+        "testPolygonRenderingRejectsEquivalentDatelineDuplicateCoordinate",
+        "testEquivalentDatelineLongitudesAreEqual",
+        "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
         "testCancellingPolygonDraftClearsCoordinates",
@@ -196,6 +377,10 @@ def main():
         "XCTAssertNil(controller.finalizePolygonDraft())",
         "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
         "XCTAssertNotNil(controller.finalizePolygonDraft())",
+        "testCollinearPolygonFinalizationClearsDraftCoordinates",
+        "testSelfIntersectingPolygonFinalizationClearsDraftCoordinates",
+        "testZeroLengthEdgePolygonFinalizationClearsDraftCoordinates",
+        "testInvalidCoordinateFinalizationClearsDraftCoordinates",
         "testCancelledTouchesClearDraftCoordinatesOutsideEditing",
         "controller.touchesCancelled(Set<UITouch>(), with: nil)",
         "testUnavailableTouchInputMapClearsDraftCoordinates",
@@ -232,6 +417,8 @@ def main():
         "make test",
         "make build",
         "make verify",
+        "make native-test",
+        "absolute Makefile path works from another directory",
         "MapKit",
         "local by default",
         "coordinates",
@@ -249,10 +436,43 @@ def main():
         "map view delegate outlet",
         "touch input map outlet",
         "hosted macOS",
+        "native XCTest",
+        "credential-free signing metadata",
         "structural validation",
+        "CLLocationCoordinate2DIsValid",
+        "out-of-range",
+        "three distinct",
+        "non-collinear",
+        "antimeridian",
+        "local PlaceShapes screenshot",
     ]:
         if phrase.lower() not in docs.lower():
             failures.append(f"docs must mention {phrase}")
+    changes = " ".join(read("CHANGES.md").split())
+    if "external absolute-Makefile calls" not in changes:
+        failures.append(
+            "CHANGES.md must record external absolute-Makefile calls"
+        )
+
+    distinct_coordinate_claims = {
+        "README.md": "requires at least three distinct valid coordinates",
+        "SECURITY.md": "require at least three distinct valid coordinates",
+        "VISION.md": "fewer than three distinct coordinates",
+        "CHANGES.md": "fewer than three distinct valid coordinates",
+    }
+    for path, phrase in distinct_coordinate_claims.items():
+        if phrase not in " ".join(read(path).split()):
+            failures.append(f"{path} must include {phrase}")
+
+    noncollinear_coordinate_claims = {
+        "README.md": "distinct but collinear coordinates",
+        "SECURITY.md": "require non-collinear coordinates",
+        "VISION.md": "distinct but collinear coordinates",
+        "CHANGES.md": "valid, distinct coordinates are all collinear",
+    }
+    for path, phrase in noncollinear_coordinate_claims.items():
+        if phrase not in " ".join(read(path).split()):
+            failures.append(f"{path} must include {phrase}")
 
     plan = read(PLAN)
     if "status: completed" not in plan or "make check" not in plan:
@@ -295,8 +515,303 @@ def main():
     if "status: completed" not in touch_input_map_plan or "mapViewForTouchInput" not in touch_input_map_plan:
         failures.append("touch input map outlet plan must record completed status and verification")
     hosted_validation_plan = read(HOSTED_VALIDATION_PLAN)
-    if "status: completed" not in hosted_validation_plan or "make check" not in hosted_validation_plan:
-        failures.append("hosted structural validation plan must record completed status and verification")
+    hosted_validation_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", hosted_validation_plan
+    )
+    hosted_validation_work = markdown_section(hosted_validation_plan, "Work Completed")
+    hosted_validation_verification = markdown_section(
+        hosted_validation_plan, "Verification Completed"
+    )
+    if hosted_validation_status != ["completed"] or not hosted_validation_work:
+        failures.append(
+            "hosted structural validation plan must record one completed status and completed work"
+        )
+    if not hosted_validation_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", hosted_validation_verification
+    ):
+        failures.append(
+            "hosted structural validation plan must record finished verification without pending markers"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "python3 -W error scripts/check-baseline.py",
+        "git diff --check",
+        "Five hostile workflow and ownership mutations",
+        "27390781674",
+        "27390782458",
+        "8fb27207d644485cba7795a186c0132261608dc6",
+        "df4cb1c069e1874edd31b4311f1884172cec0e10",
+        "a309ff8b426b58ec0e2a45f0f869d46889d02405",
+        "persist-credentials: false",
+        "* @garethpaul",
+        "repository's only hosted workflow",
+    ]:
+        if evidence not in hosted_validation_verification:
+            failures.append(
+                f"hosted structural validation plan must preserve verification evidence: {evidence}"
+            )
+
+    signing_metadata_plan = read(SIGNING_METADATA_PLAN)
+    for phrase in [
+        "status: completed",
+        "make check",
+        "six hostile mutations",
+        "DEVELOPMENT_TEAM",
+        "PROVISIONING_PROFILE_SPECIFIER",
+        "CODE_SIGN_ENTITLEMENTS",
+    ]:
+        if phrase not in signing_metadata_plan:
+            failures.append(
+                f"credential-free signing metadata plan must record {phrase}"
+            )
+
+    invalid_coordinates_plan = read(INVALID_COORDINATES_PLAN)
+    invalid_coordinates_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", invalid_coordinates_plan
+    )
+    invalid_coordinates_work = markdown_section(
+        invalid_coordinates_plan, "Work Completed"
+    )
+    invalid_coordinates_verification = markdown_section(
+        invalid_coordinates_plan, "Verification Completed"
+    )
+    if invalid_coordinates_status != ["completed"] or not invalid_coordinates_work:
+        failures.append(
+            "invalid polygon coordinates plan must record one completed status and completed work"
+        )
+    if not invalid_coordinates_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", invalid_coordinates_verification
+    ):
+        failures.append(
+            "invalid polygon coordinates plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "workflow YAML",
+        "plist and workspace XML",
+        "README SVG",
+        "hostile mutations rejected",
+        "git diff --check",
+        "secret, personal-coordinate, and generated-artifact scan",
+    ]:
+        if evidence not in invalid_coordinates_verification:
+            failures.append(
+                f"invalid polygon coordinates verification must record {evidence}"
+            )
+
+    distinct_coordinates_plan = read(DISTINCT_COORDINATES_PLAN)
+    distinct_coordinates_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", distinct_coordinates_plan
+    )
+    distinct_coordinates_work = markdown_section(
+        distinct_coordinates_plan, "Work Completed"
+    )
+    distinct_coordinates_verification = markdown_section(
+        distinct_coordinates_plan, "Verification Completed"
+    )
+    if distinct_coordinates_status != ["completed"] or not distinct_coordinates_work:
+        failures.append(
+            "distinct polygon coordinates plan must record completed status and work"
+        )
+    if not distinct_coordinates_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", distinct_coordinates_verification
+    ):
+        failures.append(
+            "distinct polygon coordinates plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "workflow YAML",
+        "plist and workspace XML",
+        "README SVG",
+        "hostile mutations",
+        "git diff --check",
+        "secret, personal-coordinate, and generated-artifact scan",
+    ]:
+        if evidence not in distinct_coordinates_verification:
+            failures.append(
+                f"distinct polygon coordinates verification must record {evidence}"
+            )
+
+    noncollinear_coordinates_plan = read(NONCOLLINEAR_COORDINATES_PLAN)
+    noncollinear_coordinates_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", noncollinear_coordinates_plan
+    )
+    noncollinear_coordinates_work = markdown_section(
+        noncollinear_coordinates_plan, "Work Completed"
+    )
+    noncollinear_coordinates_verification = markdown_section(
+        noncollinear_coordinates_plan, "Verification Completed"
+    )
+    if (
+        noncollinear_coordinates_status != ["completed"]
+        or not noncollinear_coordinates_work
+    ):
+        failures.append(
+            "non-collinear polygon coordinates plan must record completed status and work"
+        )
+    if not noncollinear_coordinates_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b",
+        noncollinear_coordinates_verification,
+    ):
+        failures.append(
+            "non-collinear polygon coordinates plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "from `/tmp`",
+        "workflow YAML",
+        "all three plists",
+        "workspace and scheme XML",
+        "README SVG",
+        "testPolygonRenderingRejectsDistinctCollinearCoordinates",
+        "testCollinearPolygonFinalizationClearsDraftCoordinates",
+    ]:
+        if evidence not in noncollinear_coordinates_verification:
+            failures.append(
+                f"non-collinear polygon coordinates verification must record {evidence}"
+            )
+
+    simple_polygon_plan = read(SIMPLE_POLYGON_PLAN)
+    simple_polygon_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", simple_polygon_plan
+    )
+    simple_polygon_work = markdown_section(simple_polygon_plan, "Work Completed")
+    simple_polygon_verification = markdown_section(
+        simple_polygon_plan, "Verification Completed"
+    )
+    if simple_polygon_status != ["completed"] or not simple_polygon_work:
+        failures.append(
+            "simple polygon ring plan must record completed status and work"
+        )
+    if not simple_polygon_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run|to be recorded)\b",
+        simple_polygon_verification,
+    ):
+        failures.append("simple polygon ring plan must record completed verification")
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "testPolygonRenderingRejectsSelfIntersectingCoordinates",
+        "testPolygonRenderingAcceptsConcaveCoordinates",
+        "testSelfIntersectingPolygonFinalizationClearsDraftCoordinates",
+        "isolated hostile mutations were rejected",
+        "git diff --check",
+    ]:
+        if evidence not in simple_polygon_verification:
+            failures.append(
+                f"simple polygon ring verification must record {evidence}"
+            )
+
+    for path in ["README.md", "SECURITY.md", "VISION.md", "CHANGES.md"]:
+        if "self-intersecting polygon drafts" not in read(path).lower():
+            failures.append(
+                f"{path} must document the self-intersecting polygon draft guard"
+            )
+        if "zero-length polygon edges" not in read(path).lower():
+            failures.append(
+                f"{path} must document the zero-length polygon edge guard"
+            )
+
+    zero_length_edge_plan = read(ZERO_LENGTH_EDGE_PLAN)
+    zero_length_edge_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", zero_length_edge_plan
+    )
+    zero_length_edge_work = markdown_section(zero_length_edge_plan, "Work Completed")
+    zero_length_edge_verification = markdown_section(
+        zero_length_edge_plan, "Verification Completed"
+    )
+    if zero_length_edge_status != ["completed"] or not zero_length_edge_work:
+        failures.append(
+            "zero-length polygon edge plan must record completed status and work"
+        )
+    if not zero_length_edge_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run|to be recorded)\b",
+        zero_length_edge_verification,
+    ):
+        failures.append(
+            "zero-length polygon edge plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "testPolygonRenderingRejectsAdjacentDuplicateCoordinate",
+        "testPolygonRenderingRejectsExplicitClosingCoordinate",
+        "testZeroLengthEdgePolygonFinalizationClearsDraftCoordinates",
+        "Six isolated hostile mutations were rejected",
+        "git diff --check",
+    ]:
+        if evidence not in zero_length_edge_verification:
+            failures.append(
+                f"zero-length polygon edge verification must record {evidence}"
+            )
+
+    location_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
+    location_make_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", location_make_plan
+    )
+    location_make_work = markdown_section(location_make_plan, "Work Completed")
+    location_make_verification = markdown_section(
+        location_make_plan, "Verification Completed"
+    )
+    if location_make_status != ["completed"] or not location_make_work:
+        failures.append(
+            "location-independent Make plan must record one completed status "
+            "and completed work"
+        )
+    if not location_make_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run)\b", location_make_verification
+    ):
+        failures.append(
+            "location-independent Make plan must record completed verification"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "make static-check",
+        "from `/tmp`",
+        "absolute",
+        "caller-supplied `REPO_ROOT=/tmp`",
+        "python3 -m py_compile scripts/check-baseline.py",
+        "workflow YAML",
+        "all three plists",
+        "workspace/scheme XML",
+        "README SVG",
+        "Nine isolated hostile mutations were rejected",
+    ]:
+        if evidence not in location_make_verification:
+            failures.append(
+                f"location-independent Make verification must record {evidence}"
+            )
 
     if failures:
         for failure in failures:

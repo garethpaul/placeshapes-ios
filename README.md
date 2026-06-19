@@ -73,6 +73,13 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   sharing, or upload behavior.
 - The test target keeps non-placeholder XCTest coverage for minimum and invalid
   polygon coordinate counts.
+- Polygon finalization also rejects out-of-range Core Location latitude or
+  longitude values before constructing an `MKPolygon`, and clears the rejected
+  draft coordinate buffer.
+- Polygon finalization requires at least three distinct valid coordinates, so
+  repeated points cannot turn a one- or two-point draft into a rendered shape.
+- Polygon finalization also rejects distinct but collinear coordinates so
+  zero-area drafts cannot replace the current overlay.
 - Starting polygon drafts clears any stale coordinates before collecting the
   next touch path.
 - Cancelled touches clear in-progress polygon draft coordinates.
@@ -82,6 +89,18 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the map returns to normal interaction.
 - Finalized polygon drafts clear the raw coordinate buffer whether the draft is
   too short to render or successfully becomes an `MKPolygon`.
+- Self-intersecting polygon drafts are rejected before `MKPolygon`
+  construction, while valid concave drafts remain supported.
+- Zero-length polygon edges, including an explicitly repeated closing vertex,
+  are rejected before `MKPolygon` construction.
+- Longitude validation treats `180` and `-180` as the same meridian and unwraps
+  antimeridian-crossing drafts before planar intersection checks.
+
+## Example
+
+The local PlaceShapes screenshot shows a polygon drawn over the map:
+
+![PlaceShapes polygon drawn on a map](screenshots/001.png)
 
 ## Testing and Verification
 
@@ -90,6 +109,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make test`
 - `make build`
 - `make verify`
+- `make native-test`
 - `python3 scripts/check-baseline.py`
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination on a macOS machine with the matching Apple toolchain
 
@@ -97,6 +117,11 @@ The Make lint, test, build, verify, and check targets all run the static
 baseline on hosts without the matching legacy Xcode toolchain.
 Pinned hosted macOS structural validation runs the same `make check` contract
 on Python 3.12 without installing pods, signing, or invoking location services.
+The same hosted job runs native XCTest on an available iPhone simulator with a
+Swift 5 compatibility override, while the project retains its Swift 3 metadata.
+Credential-free signing metadata is enforced in the Xcode project: no Apple
+development team, provisioning profile, entitlements path, or account-specific
+signing identity may be committed.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -116,12 +141,17 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Maintenance Notes
 
+- Standard Make aliases resolve the structural checker from `Makefile`, so an
+  absolute Makefile path works from another directory without changing scope.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Run `make lint`, `make test`, `make build`, `make verify`, and `make check`
   before changing project metadata, MapKit drawing behavior, or
   privacy-related docs.
 - Keep non-placeholder XCTest coverage in place when changing polygon creation
   rules.
+- Keep coordinate-aware polygon validation using
+  `CLLocationCoordinate2DIsValid` before `MKPolygon` construction.
+- Keep non-collinear coordinate validation after valid and distinct checks.
 - Keep starting polygon drafts from reusing stale coordinates.
 - Keep cancelled touches from leaving stale polygon draft coordinates.
 - Keep cancelled touch callbacks clearing stale polygon drafts regardless of

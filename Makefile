@@ -1,4 +1,6 @@
-.PHONY: build check lint static-check test verify
+.PHONY: build check lint native-test static-check test verify
+
+override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 check: verify
 
@@ -10,5 +12,8 @@ test: static-check
 
 build: static-check
 
+native-test: scripts/run-xcode-tests.sh
+	"$(REPO_ROOT)/scripts/run-xcode-tests.sh"
+
 static-check:
-	python3 scripts/check-baseline.py
+	python3 "$(REPO_ROOT)/scripts/check-baseline.py"
