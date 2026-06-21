@@ -50,15 +50,22 @@ Additional scan context:
 ```bash
 git clone https://github.com/garethpaul/placeshapes-ios.git
 cd placeshapes-ios
-pod install
 make check
 ```
+
+The checked-in `Podfile` currently declares no pods, so CocoaPods setup is
+optional. Run `pod install` only after adding or intentionally restoring a pod
+dependency.
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
 
 ## Running or Using the Project
 
-- Open `PlaceShapes.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
+- Open `PlaceShapes.xcodeproj` in Xcode to inspect or build the `PlaceShapes`
+  framework. This repository does not contain a standalone app target.
+- Use the shared `PlaceShapes` scheme's Test action to run the
+  `PlaceShapesTests` bundle on a compatible simulator, or use `make native-test`
+  for the repository's scripted simulator test workflow.
 - Use `PlaceShapes/PlaceShapes.swift` as the drawing behavior reference: edit
   mode collects touch coordinates and renders the resulting `MKPolygon`.
 - The CocoaPods platform matches the iOS 10.1 deployment target declared by
