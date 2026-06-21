@@ -18,6 +18,7 @@ LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-mak
 NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
 SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
 ZERO_LENGTH_EDGE_PLAN = "docs/plans/2026-06-17-zero-length-polygon-edges.md"
+SAFE_MAKE_ROOT_PLAN = "docs/plans/2026-06-21-safe-make-root.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -59,7 +60,9 @@ REQUIRED = [
     NONCOLLINEAR_COORDINATES_PLAN,
     SIMPLE_POLYGON_PLAN,
     ZERO_LENGTH_EDGE_PLAN,
+    SAFE_MAKE_ROOT_PLAN,
     "scripts/check-baseline.py",
+    "scripts/test-makefile-root.py",
     "scripts/run-xcode-tests.sh",
     "screenshots/001.png",
 ]
@@ -85,18 +88,30 @@ def main():
 
     makefile = read("Makefile")
     for phrase in [
-        "override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        "ifneq ($(origin MAKEFILE_LIST),file)",
+        "$(error MAKEFILE_LIST must not be overridden)",
+        "override REPO_ROOT := $(shell path=",
         'python3 "$(REPO_ROOT)/scripts/check-baseline.py"',
+        'python3 "$(REPO_ROOT)/scripts/test-makefile-root.py"',
         "check: verify",
         "verify: static-check",
         "lint: static-check",
         "test: static-check",
         "build: static-check",
-        'native-test: scripts/run-xcode-tests.sh',
+        'native-test:',
         '"$(REPO_ROOT)/scripts/run-xcode-tests.sh"',
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
+
+    safe_make_root_plan = read(SAFE_MAKE_ROOT_PLAN)
+    for evidence in [
+        "all eight public Make targets",
+        "command-line and environment `REPO_ROOT`",
+        "command-line and environment `MAKEFILE_LIST`",
+    ]:
+        if evidence not in safe_make_root_plan:
+            failures.append(f"safe Make root plan must record {evidence}")
 
     workflow = read(".github/workflows/check.yml")
     codeowners = read(".github/CODEOWNERS")

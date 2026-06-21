@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-21
+
+- Kept all structural and optional native Make targets rooted in absolute
+  checkout paths containing spaces or apostrophes, ignored caller-provided
+  `REPO_ROOT`, and rejected `MAKEFILE_LIST` injection.
+- Added dry-run root-policy coverage for all eight public Make targets.
+
 ## 2026-06-19
 
 - Added hosted native XCTest coverage and dual Swift 3/modern MapKit overlay API
