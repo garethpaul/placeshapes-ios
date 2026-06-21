@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-21
+
+- Hardened every public Make quality gate against `MAKEFILE_LIST`, `MAKEFILES`,
+  `REPO_ROOT`, `SHELL`, shell-flag, and `PYTHON` redirection. Executable
+  regressions cover temporary paths containing spaces, apostrophes, double
+  quotes, and backticks.
+
 ## 2026-06-19
 
 - Added hosted native XCTest coverage and dual Swift 3/modern MapKit overlay API
