@@ -88,13 +88,21 @@ def main():
 
     makefile = read("Makefile")
     for phrase in [
+        "override SHELL := /bin/sh",
+        "override .SHELLFLAGS := -c",
+        "ifneq ($(strip $(MAKEFILES)),)",
+        "$(error MAKEFILES must not be set)",
+        "override MAKEFILES :=",
         "ifneq ($(origin MAKEFILE_LIST),file)",
         "$(error MAKEFILE_LIST must not be overridden)",
-        "override REPO_ROOT := $(shell path=",
-        "/usr/bin/dirname",
-        "/bin/pwd -P",
-        'python3 "$(REPO_ROOT)/scripts/check-baseline.py"',
-        'python3 "$(REPO_ROOT)/scripts/test-makefile-root.py"',
+        "override REPO_ROOT := $(shell MAKEFILE_LIST_RAW=",
+        "trusted Makefile path not found",
+        "shlex.quote(os.path.dirname(os.path.realpath(path)))",
+        "override PYTHON := python3",
+        "verify: override REPO_ROOT := $(REPO_ROOT)",
+        "verify: override PYTHON := $(PYTHON)",
+        "$(PYTHON) $(REPO_ROOT)/scripts/check-baseline.py",
+        "$(PYTHON) $(REPO_ROOT)/scripts/test-makefile-root.py",
         "check: verify",
         "verify: static-check root-test",
         "lint: static-check",
@@ -102,7 +110,7 @@ def main():
         "build: static-check",
         "native-test:",
         "root-test:",
-        '"$(REPO_ROOT)/scripts/run-xcode-tests.sh"',
+        "$(REPO_ROOT)/scripts/run-xcode-tests.sh",
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
@@ -110,12 +118,24 @@ def main():
     root_test = read("scripts/test-makefile-root.py")
     for phrase in [
         "TARGETS = (",
-        '"command override"',
-        '"environment override"',
+        '"command ROOT override"',
+        '"environment ROOT override"',
+        '"command SHELL override"',
+        '"environment SHELL override"',
+        '"command shell flags override"',
+        '"environment shell flags override"',
+        '"command PYTHON override"',
+        '"environment PYTHON override"',
         '"command MAKEFILE_LIST override"',
         '"environment MAKEFILE_LIST override"',
+        '"command MAKEFILES override"',
+        '"environment MAKEFILES override"',
+        '"earlier explicit Makefile"',
+        "caller-controlled shell or Python executed",
+        "backticks in the checkout path executed",
         "MAKEFILE_LIST must not be overridden",
-        "24 target/override cases",
+        "MAKEFILES must not be set",
+        "72 executable target/override cases",
     ]:
         if phrase not in root_test:
             failures.append(f"Makefile root regression test must include {phrase}")

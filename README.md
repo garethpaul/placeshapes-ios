@@ -144,9 +144,11 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 - Standard Make aliases resolve the structural checker from `Makefile`, so an
   absolute Makefile path works from another directory without changing scope.
-  They reject caller-controlled `MAKEFILE_LIST` values, ignore `REPO_ROOT`
-  overrides, and are regression-tested from paths containing shell-sensitive
-  characters.
+  They reject caller-controlled `MAKEFILE_LIST` and `MAKEFILES` values, freeze
+  recipe/interpreter authority, ignore `REPO_ROOT` overrides, and are
+  executable-regression-tested from paths containing shell-sensitive
+  characters. Caller-supplied Makefiles and the host executable search path
+  remain outside this repository's trust boundary.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Run `make lint`, `make test`, `make build`, `make verify`, and `make check`
   before changing project metadata, MapKit drawing behavior, or
