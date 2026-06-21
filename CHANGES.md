@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-21
+
+- Hardened every public Make quality gate against `MAKEFILE_LIST` and
+  `REPO_ROOT` redirection, including regression coverage from temporary paths
+  containing spaces and apostrophes.
+
 ## 2026-06-19
 
 - Added hosted native XCTest coverage and dual Swift 3/modern MapKit overlay API

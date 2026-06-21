@@ -15,6 +15,7 @@ SIGNING_METADATA_PLAN = "docs/plans/2026-06-13-credential-free-signing-metadata.
 INVALID_COORDINATES_PLAN = "docs/plans/2026-06-13-invalid-polygon-coordinates.md"
 DISTINCT_COORDINATES_PLAN = "docs/plans/2026-06-13-distinct-polygon-coordinates.md"
 LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-14-location-independent-make-gates.md"
+SAFE_MAKE_ROOT_PLAN = "docs/plans/2026-06-21-safe-make-root.md"
 NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
 SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
 ZERO_LENGTH_EDGE_PLAN = "docs/plans/2026-06-17-zero-length-polygon-edges.md"
@@ -56,11 +57,13 @@ REQUIRED = [
     INVALID_COORDINATES_PLAN,
     DISTINCT_COORDINATES_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
+    SAFE_MAKE_ROOT_PLAN,
     NONCOLLINEAR_COORDINATES_PLAN,
     SIMPLE_POLYGON_PLAN,
     ZERO_LENGTH_EDGE_PLAN,
     "scripts/check-baseline.py",
     "scripts/run-xcode-tests.sh",
+    "scripts/test-makefile-root.py",
     "screenshots/001.png",
 ]
 
@@ -85,18 +88,37 @@ def main():
 
     makefile = read("Makefile")
     for phrase in [
-        "override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        "ifneq ($(origin MAKEFILE_LIST),file)",
+        "$(error MAKEFILE_LIST must not be overridden)",
+        "override REPO_ROOT := $(shell path=",
+        "/usr/bin/dirname",
+        "/bin/pwd -P",
         'python3 "$(REPO_ROOT)/scripts/check-baseline.py"',
+        'python3 "$(REPO_ROOT)/scripts/test-makefile-root.py"',
         "check: verify",
-        "verify: static-check",
+        "verify: static-check root-test",
         "lint: static-check",
         "test: static-check",
         "build: static-check",
-        'native-test: scripts/run-xcode-tests.sh',
+        "native-test:",
+        "root-test:",
         '"$(REPO_ROOT)/scripts/run-xcode-tests.sh"',
     ]:
         if phrase not in makefile:
             failures.append(f"Makefile must include {phrase}")
+
+    root_test = read("scripts/test-makefile-root.py")
+    for phrase in [
+        "TARGETS = (",
+        '"command override"',
+        '"environment override"',
+        '"command MAKEFILE_LIST override"',
+        '"environment MAKEFILE_LIST override"',
+        "MAKEFILE_LIST must not be overridden",
+        "24 target/override cases",
+    ]:
+        if phrase not in root_test:
+            failures.append(f"Makefile root regression test must include {phrase}")
 
     workflow = read(".github/workflows/check.yml")
     codeowners = read(".github/CODEOWNERS")
