@@ -224,6 +224,17 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
         coordinates.removeAll()
     }
 
+    @discardableResult
+    func appendCoordinateToDraft(_ coordinate: CLLocationCoordinate2D) -> Bool {
+        if let lastCoordinate = coordinates.last,
+            PlaceShapes.coordinatesAreEqual(lastCoordinate, coordinate) {
+            return false
+        }
+
+        coordinates.append(coordinate)
+        return true
+    }
+
     func cancelPolygonDraft() {
         coordinates.removeAll()
     }
@@ -301,7 +312,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             // Convert touches to map coordinates
             for touch in touches {
                 let coordinate = touchMapView.convert(touch.location(in: touchMapView), toCoordinateFrom: touchMapView)
-                coordinates.append(coordinate)
+                appendCoordinateToDraft(coordinate)
             }
         }
     }
@@ -317,7 +328,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
                 // Use this method to convert a CGPoint to CLLocationCoordinate2D
                 let coordinate = touchMapView.convert(touch.location(in: touchMapView), toCoordinateFrom: touchMapView)
                 // Add the coordinate to the array
-                coordinates.append(coordinate)
+                appendCoordinateToDraft(coordinate)
             }
         }
     }
@@ -331,7 +342,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
             // Convert touches to map coordinates
             for touch in touches {
                 let coordinate = touchMapView.convert(touch.location(in: touchMapView), toCoordinateFrom: touchMapView)
-                coordinates.append(coordinate)
+                appendCoordinateToDraft(coordinate)
             }
 
             guard let nextPolygon = finalizePolygonDraft() else {

@@ -56,6 +56,8 @@
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Run `make lint`, `make test`, `make build`, `make verify`, and `make check` before changing project metadata, MapKit drawing behavior, or privacy-related docs.
 - Keep non-placeholder XCTest coverage in place when changing polygon creation rules.
+- Route coordinate collection through consecutive duplicate touch sample
+  filtering so normal move/end delivery does not manufacture zero-length edges.
 
 ## Agent workflow
 

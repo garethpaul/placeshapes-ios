@@ -204,6 +204,36 @@ class PlaceShapesTests: XCTestCase {
         XCTAssertTrue(PlaceShapes.coordinatesAreEqual(positiveDateline, negativeDateline))
     }
 
+    func testAppendingConsecutiveDuplicateDraftCoordinateIsIgnored() {
+        let controller = PlaceShapes()
+        let coordinate = CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0)
+
+        XCTAssertTrue(controller.appendCoordinateToDraft(coordinate))
+        XCTAssertFalse(controller.appendCoordinateToDraft(coordinate))
+        XCTAssertEqual(controller.coordinates.count, 1)
+    }
+
+    func testAppendingDistinctDraftCoordinateIsAccepted() {
+        let controller = PlaceShapes()
+        let firstCoordinate = CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0)
+        let secondCoordinate = CLLocationCoordinate2D(latitude: 37.1, longitude: -122.1)
+
+        XCTAssertTrue(controller.appendCoordinateToDraft(firstCoordinate))
+        XCTAssertTrue(controller.appendCoordinateToDraft(secondCoordinate))
+        XCTAssertEqual(controller.coordinates.count, 2)
+    }
+
+    func testConsecutiveDuplicateTouchSampleDoesNotInvalidatePolygonDraft() {
+        let controller = PlaceShapes()
+        let finalCoordinate = CLLocationCoordinate2D(latitude: 37.0, longitude: -121.9)
+
+        XCTAssertTrue(controller.appendCoordinateToDraft(CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0)))
+        XCTAssertTrue(controller.appendCoordinateToDraft(CLLocationCoordinate2D(latitude: 37.1, longitude: -122.0)))
+        XCTAssertTrue(controller.appendCoordinateToDraft(finalCoordinate))
+        XCTAssertFalse(controller.appendCoordinateToDraft(finalCoordinate))
+        XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: controller.coordinates))
+    }
+
     func testBeginningPolygonDraftClearsCoordinates() {
         let controller = PlaceShapes()
         controller.coordinates = [

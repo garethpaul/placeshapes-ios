@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-25
+
+- Ignored consecutive duplicate touch samples before polygon validation so a
+  repeated final lift coordinate does not discard an otherwise valid drawing.
+
 ## 2026-06-21
 
 - Hardened every public Make quality gate against `MAKEFILE_LIST`, `MAKEFILES`,
