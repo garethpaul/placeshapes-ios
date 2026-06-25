@@ -87,6 +87,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   repeated points cannot turn a one- or two-point draft into a rendered shape.
 - Polygon finalization also rejects distinct but collinear coordinates so
   zero-area drafts cannot replace the current overlay.
+- Touch sampling ignores consecutive duplicate touch samples, so a normal
+  move-to-lift sequence at the same final location does not create a rejected
+  zero-length polygon edge.
 - Starting polygon drafts clears any stale coordinates before collecting the
   next touch path.
 - Cancelled touches clear in-progress polygon draft coordinates.

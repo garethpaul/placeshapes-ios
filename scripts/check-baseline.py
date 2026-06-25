@@ -19,6 +19,7 @@ SAFE_MAKE_ROOT_PLAN = "docs/plans/2026-06-21-safe-make-root.md"
 NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coordinates.md"
 SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
 ZERO_LENGTH_EDGE_PLAN = "docs/plans/2026-06-17-zero-length-polygon-edges.md"
+CONSECUTIVE_TOUCH_SAMPLES_PLAN = "docs/plans/2026-06-25-consecutive-touch-samples.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -61,6 +62,7 @@ REQUIRED = [
     NONCOLLINEAR_COORDINATES_PLAN,
     SIMPLE_POLYGON_PLAN,
     ZERO_LENGTH_EDGE_PLAN,
+    CONSECUTIVE_TOUCH_SAMPLES_PLAN,
     "scripts/check-baseline.py",
     "scripts/run-xcode-tests.sh",
     "scripts/test-makefile-root.py",
@@ -303,6 +305,9 @@ def main():
         "hasNonzeroPolygonEdges(coordinates)",
         "if distinctCoordinates.count == 3",
         "func beginPolygonDraft()",
+        "func appendCoordinateToDraft(_ coordinate: CLLocationCoordinate2D) -> Bool",
+        "coordinates.last",
+        "coordinatesAreEqual(lastCoordinate, coordinate)",
         "func cancelPolygonDraft()",
         "func mapViewForTouchInput() -> MKMapView?",
         "guard let touchMapView = mapView else",
@@ -328,6 +333,10 @@ def main():
             failures.append(f"PlaceShapes.swift must include {phrase}")
     if swift.count("guard let touchMapView = mapViewForTouchInput() else") != 3:
         failures.append("all three active touch callbacks must guard the map view outlet")
+    if swift.count("appendCoordinateToDraft(coordinate)") != 3:
+        failures.append("all three active touch callbacks must deduplicate coordinate samples")
+    if swift.count("coordinates.append(coordinate)") != 1:
+        failures.append("only the shared draft append helper may append touch coordinates")
     coordinate_validation_source = swift[
         swift.find("static func shouldRenderPolygon(coordinates:"):
         swift.find("func beginPolygonDraft()")
@@ -408,6 +417,12 @@ def main():
         "testPolygonRenderingAcceptsSimpleDatelineCrossingCoordinates",
         "testPolygonRenderingRejectsEquivalentDatelineDuplicateCoordinate",
         "testEquivalentDatelineLongitudesAreEqual",
+        "testAppendingConsecutiveDuplicateDraftCoordinateIsIgnored",
+        "XCTAssertFalse(controller.appendCoordinateToDraft(coordinate))",
+        "testAppendingDistinctDraftCoordinateIsAccepted",
+        "XCTAssertTrue(controller.appendCoordinateToDraft(secondCoordinate))",
+        "testConsecutiveDuplicateTouchSampleDoesNotInvalidatePolygonDraft",
+        "XCTAssertTrue(PlaceShapes.shouldRenderPolygon(coordinates: controller.coordinates))",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinates: coordinates))",
         "testBeginningPolygonDraftClearsCoordinates",
         "controller.beginPolygonDraft()",
@@ -775,6 +790,10 @@ def main():
         if "zero-length polygon edges" not in read(path).lower():
             failures.append(
                 f"{path} must document the zero-length polygon edge guard"
+            )
+        if "consecutive duplicate touch samples" not in read(path).lower():
+            failures.append(
+                f"{path} must document consecutive duplicate touch sampling"
             )
 
     zero_length_edge_plan = read(ZERO_LENGTH_EDGE_PLAN)
