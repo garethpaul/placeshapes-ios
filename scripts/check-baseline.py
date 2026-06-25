@@ -833,6 +833,42 @@ def main():
                 f"zero-length polygon edge verification must record {evidence}"
             )
 
+    consecutive_touch_plan = read(CONSECUTIVE_TOUCH_SAMPLES_PLAN)
+    consecutive_touch_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", consecutive_touch_plan
+    )
+    consecutive_touch_work = markdown_section(
+        consecutive_touch_plan, "Work Completed"
+    )
+    consecutive_touch_verification = markdown_section(
+        consecutive_touch_plan, "Verification Completed"
+    )
+    if consecutive_touch_status != ["completed"] or not consecutive_touch_work:
+        failures.append(
+            "consecutive touch sample plan must record completed status and work"
+        )
+    if not consecutive_touch_verification or re.search(
+        r"(?i)\b(?:pending|todo|tbd|not run|to be recorded)\b",
+        consecutive_touch_verification,
+    ):
+        failures.append(
+            "consecutive touch sample plan must record completed verification"
+        )
+    for evidence in [
+        "All five Make aliases",
+        "absolute Makefile",
+        "31 XCTest methods",
+        "Six isolated hostile mutations were rejected",
+        "28165391772",
+        "28165394470",
+        "Codex review",
+        "git diff --check",
+    ]:
+        if evidence not in consecutive_touch_verification:
+            failures.append(
+                f"consecutive touch sample verification must record {evidence}"
+            )
+
     location_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
     location_make_status = re.findall(
         r"(?mi)^status:\s*(.+?)\s*$", location_make_plan
