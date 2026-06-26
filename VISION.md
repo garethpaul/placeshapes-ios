@@ -51,7 +51,6 @@ Priority:
 
 Next priorities:
 
-- Document supported Xcode, Swift, and iOS versions
 - Add a small sample app flow that demonstrates importing `PlaceShapes`
 - Add tests or manual verification notes for polygon creation
 - Clarify how callers can read, reset, and style drawn shapes
