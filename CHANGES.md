@@ -1,5 +1,50 @@
 # Changes
 
+## 2026-06-25 23:31 PDT - P2 - Document supported Apple toolchains
+
+### Summary
+
+Documented the repository's historical Xcode 8.1, Swift 3, and iOS 10.1
+contract separately from its hosted current-compiler validation path.
+
+### Work completed
+
+- Added an explicit README support matrix derived from project and test-script
+  metadata.
+- Clarified that hosted `macos-15` uses its runner-default Xcode with
+  `SWIFT_VERSION=5` and `IPHONEOS_DEPLOYMENT_TARGET=12.0` overrides.
+- Added fail-closed documentation checks and advanced the roadmap.
+
+### Threads
+
+- None; the checked-in Xcode project, workflow, and test script were sufficient.
+
+### Files changed
+
+- `README.md` — legacy and hosted toolchain support boundaries.
+- `VISION.md` — removed the completed documentation priority.
+- `scripts/check-baseline.py` — durable support-matrix contracts.
+- `CHANGES.md` — this cycle record.
+
+### Validation
+
+- Red `make check` — failed for the missing support matrix before documentation.
+- `make check` — passed.
+- `git diff --check` — passed.
+
+### Bugs / findings
+
+- P2 documentation: "supports Swift 3" alone was ambiguous because hosted tests
+  intentionally compile with Swift 5 while preserving Swift 3 project metadata.
+
+### Blockers
+
+- Xcode 8.1 is not installed locally; no source or project behavior changed.
+
+### Next action
+
+- Add a small sample app flow demonstrating framework import and polygon use.
+
 ## 2026-06-25
 
 - Ignored consecutive duplicate touch samples before polygon validation so a

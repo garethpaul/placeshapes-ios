@@ -59,6 +59,19 @@ dependency.
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
 
+### Toolchain Support
+
+- The checked-in project metadata targets Xcode 8.1, Swift 3, and iOS 10.1.
+  That is the historical compatibility contract; preserve it unless a dedicated
+  modernization change intentionally updates the project.
+- Hosted native tests use the runner-default Xcode on GitHub's `macos-15`
+  image. `scripts/run-xcode-tests.sh` supplies `SWIFT_VERSION=5` and
+  `IPHONEOS_DEPLOYMENT_TARGET=12.0` so a current compiler can validate the
+  maintained source and tests without rewriting the legacy project settings.
+- The hosted override proves current compile/test compatibility, not that the
+  runner exercises an iOS 10.1 device or simulator. Use Xcode 8.1-era tooling
+  when validating the original deployment environment.
+
 ## Running or Using the Project
 
 - Open `PlaceShapes.xcodeproj` in Xcode to inspect or build the `PlaceShapes`
