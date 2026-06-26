@@ -1,5 +1,64 @@
 # Changes
 
+## 2026-06-26 11:13 PDT - P1 - Preserve host map interaction state
+
+### Summary
+
+Made edit-mode teardown restore the map view's pre-edit interaction setting
+instead of unconditionally enabling host-owned interaction.
+
+### Work completed
+
+- Captured the map interaction state only when entering edit mode.
+- Kept map movement disabled while editing and restored the captured value only
+  when leaving an active edit session.
+- Added XCTest regressions for initially enabled, initially disabled, and
+  already-non-editing map views.
+- Added mutation-sensitive portable source, test, documentation, and plan
+  contracts.
+
+### Threads
+
+- None; the defect and expected host-state contract were fully observable in
+  the checked-in controller and tests.
+
+### Files changed
+
+- `PlaceShapes/PlaceShapes.swift` — transition-aware map interaction restore.
+- `PlaceShapesTests/PlaceShapesTests.swift` — host-state regressions.
+- `scripts/check-baseline.py` — durable implementation and evidence contracts.
+- `README.md`, `SECURITY.md`, `VISION.md` — integration-state guarantee.
+- `docs/plans/2026-06-26-preserve-map-interaction-state.md` — implementation
+  and verification record.
+- `CHANGES.md` — this cycle record.
+
+### Validation
+
+- Red `python3 scripts/check-baseline.py` rejected the missing state capture,
+  transition check, restore path, and unconditional enable.
+- `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  passed.
+- The absolute Makefile check passed from an external working directory.
+- Python and shell syntax checks passed.
+- Three isolated hostile mutations were rejected.
+- `git diff --check` passed.
+
+### Bugs / findings
+
+- P1 integration state: `setEditing(false, animated:)` always set
+  `isUserInteractionEnabled` to `true`, overriding a map disabled by the host
+  before editing or while already outside edit mode.
+
+### Blockers
+
+- Native XCTest requires macOS/Xcode and is delegated to the required hosted
+  `macos-15` check; Linux validation covers the portable contract.
+
+### Next action
+
+- Validate the exact pull-request head with hosted XCTest and CodeQL, then
+  merge only if the immutable review is clean.
+
 ## 2026-06-25 23:31 PDT - P2 - Document supported Apple toolchains
 
 ### Summary

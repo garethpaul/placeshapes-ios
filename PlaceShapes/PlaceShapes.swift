@@ -17,6 +17,7 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     var coordinates = [CLLocationCoordinate2D]()
     // Polygon to draw on map
     var polygon = MKPolygon()
+    private var mapInteractionWasEnabledBeforeEditing: Bool?
 
     static func shouldRenderPolygon(coordinateCount: Int) -> Bool {
         return coordinateCount >= 3
@@ -286,16 +287,22 @@ class PlaceShapes: UIViewController, MKMapViewDelegate {
     
     // MARK: - Get notified when the view begins/ends editing
     override func setEditing(_ editing: Bool, animated: Bool) {
+        let wasEditing = isEditing
         super.setEditing(editing, animated: animated)
         
         if editing {
+            if !wasEditing {
+                mapInteractionWasEnabledBeforeEditing = mapView?.isUserInteractionEnabled
+            }
             // Disable the map from moving
             mapView?.isUserInteractionEnabled = false
         }
         else {
             cancelPolygonDraft()
-            // Enable the map to move
-            mapView?.isUserInteractionEnabled = true
+            if wasEditing, let previousMapInteractionState = mapInteractionWasEnabledBeforeEditing {
+                mapView?.isUserInteractionEnabled = previousMapInteractionState
+            }
+            mapInteractionWasEnabledBeforeEditing = nil
         }
     }
     

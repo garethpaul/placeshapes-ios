@@ -55,8 +55,9 @@ Cancelled touches should clear in-progress polygon draft coordinates so stale
 points are not retained in the editing flow.
 Cancelled touch callbacks should clear stale polygon drafts even if edit mode
 has already changed.
-Leaving edit mode should also clear in-progress polygon draft coordinates before
-normal map interaction resumes.
+Leaving edit mode should also clear in-progress polygon draft coordinates and
+restore the map view's prior interaction state. It must not enable a map that
+the embedding host had disabled before editing began.
 Finalized polygon drafts should clear the raw coordinate buffer after invalid
 or successful touch-end handling so private place data is not retained longer
 than needed.

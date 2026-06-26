@@ -109,7 +109,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Cancelled touch callbacks clear stale polygon drafts even if edit mode has
   already changed.
 - Leaving edit mode also clears in-progress polygon draft coordinates before
-  the map returns to normal interaction.
+  restoring the map view's pre-edit interaction state. A host-disabled map
+  remains disabled instead of being unconditionally enabled.
 - Finalized polygon drafts clear the raw coordinate buffer whether the draft is
   too short to render or successfully becomes an `MKPolygon`.
 - Self-intersecting polygon drafts are rejected before `MKPolygon`
@@ -186,6 +187,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Keep cancelled touch callbacks clearing stale polygon drafts regardless of
   current edit mode.
 - Keep leaving edit mode from retaining stale polygon draft coordinates.
+- Keep edit-mode teardown from overwriting the host map view's prior
+  interaction state.
 - Keep finalized polygon drafts from retaining stale raw coordinate buffers.
 - Keep the CocoaPods platform aligned with the Xcode iOS deployment target.
 - Keep plist bundle identifiers and plist package types explicit when editing
