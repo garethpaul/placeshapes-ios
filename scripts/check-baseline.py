@@ -20,6 +20,7 @@ NONCOLLINEAR_COORDINATES_PLAN = "docs/plans/2026-06-14-noncollinear-polygon-coor
 SIMPLE_POLYGON_PLAN = "docs/plans/2026-06-16-simple-polygon-ring-validation.md"
 ZERO_LENGTH_EDGE_PLAN = "docs/plans/2026-06-17-zero-length-polygon-edges.md"
 CONSECUTIVE_TOUCH_SAMPLES_PLAN = "docs/plans/2026-06-25-consecutive-touch-samples.md"
+MAP_INTERACTION_STATE_PLAN = "docs/plans/2026-06-26-preserve-map-interaction-state.md"
 REQUIRED = [
     ".github/CODEOWNERS",
     ".github/workflows/check.yml",
@@ -63,6 +64,7 @@ REQUIRED = [
     SIMPLE_POLYGON_PLAN,
     ZERO_LENGTH_EDGE_PLAN,
     CONSECUTIVE_TOUCH_SAMPLES_PLAN,
+    MAP_INTERACTION_STATE_PLAN,
     "scripts/check-baseline.py",
     "scripts/run-xcode-tests.sh",
     "scripts/test-makefile-root.py",
@@ -326,6 +328,12 @@ def main():
         "touchMapView.add(polygon)",
         "var draftCoordinates = coordinates",
         "mapView?.isUserInteractionEnabled",
+        "var mapInteractionWasEnabledBeforeEditing: Bool?",
+        "let wasEditing = isEditing",
+        "if !wasEditing {",
+        "mapInteractionWasEnabledBeforeEditing = mapView?.isUserInteractionEnabled",
+        "if wasEditing, let previousMapInteractionState = mapInteractionWasEnabledBeforeEditing",
+        "mapView?.isUserInteractionEnabled = previousMapInteractionState",
         "cancelPolygonDraft()",
         "touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {\n        cancelPolygonDraft()",
     ]:
@@ -337,6 +345,8 @@ def main():
         failures.append("all three active touch callbacks must deduplicate coordinate samples")
     if swift.count("coordinates.append(coordinate)") != 1:
         failures.append("only the shared draft append helper may append touch coordinates")
+    if "mapView?.isUserInteractionEnabled = true" in swift:
+        failures.append("leaving edit mode must not unconditionally enable map interaction")
     coordinate_validation_source = swift[
         swift.find("static func shouldRenderPolygon(coordinates:"):
         swift.find("func beginPolygonDraft()")
@@ -390,6 +400,7 @@ def main():
     if swift.count("polygonIntersectionTolerance = 0.000000000001") != 1:
         failures.append("simple polygon validation must use one reviewed intersection tolerance")
     for phrase in [
+        "import MapKit",
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))",
@@ -430,6 +441,11 @@ def main():
         "controller.cancelPolygonDraft()",
         "testLeavingEditingClearsPolygonDraftCoordinates",
         "controller.setEditing(false, animated: false)",
+        "testLeavingEditingPreservesDisabledMapInteraction",
+        "testLeavingEditingRestoresEnabledMapInteraction",
+        "testSettingNonEditingDoesNotEnableDisabledMapInteraction",
+        "XCTAssertFalse(mapView.isUserInteractionEnabled)",
+        "XCTAssertTrue(mapView.isUserInteractionEnabled)",
         "testInvalidPolygonFinalizationClearsDraftCoordinates",
         "XCTAssertNil(controller.finalizePolygonDraft())",
         "testSuccessfulPolygonFinalizationClearsDraftCoordinates",
@@ -799,6 +815,42 @@ def main():
         if "consecutive duplicate touch samples" not in read(path).lower():
             failures.append(
                 f"{path} must document consecutive duplicate touch sampling"
+            )
+        if "interaction state" not in read(path).lower():
+            failures.append(
+                f"{path} must document host map interaction state preservation"
+            )
+
+    map_interaction_state_plan = read(MAP_INTERACTION_STATE_PLAN)
+    map_interaction_state_status = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", map_interaction_state_plan
+    )
+    map_interaction_state_work = markdown_section(
+        map_interaction_state_plan, "Work Completed"
+    )
+    map_interaction_state_verification = markdown_section(
+        map_interaction_state_plan, "Verification Completed"
+    )
+    if map_interaction_state_status != ["completed"] or not map_interaction_state_work:
+        failures.append(
+            "map interaction state plan must record completed status and work"
+        )
+    for evidence in [
+        "make lint",
+        "make test",
+        "make build",
+        "make verify",
+        "make check",
+        "external working directory",
+        "testLeavingEditingPreservesDisabledMapInteraction",
+        "testLeavingEditingRestoresEnabledMapInteraction",
+        "testSettingNonEditingDoesNotEnableDisabledMapInteraction",
+        "Three isolated hostile mutations were rejected",
+        "git diff --check",
+    ]:
+        if evidence not in map_interaction_state_verification:
+            failures.append(
+                f"map interaction state verification must record {evidence}"
             )
 
     zero_length_edge_plan = read(ZERO_LENGTH_EDGE_PLAN)

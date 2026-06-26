@@ -36,6 +36,8 @@ Priority:
 - Keep cancelled touches from retaining polygon draft coordinates
 - Keep cancelled touch callbacks clearing stale drafts after edit mode changes
 - Keep leaving edit mode from retaining polygon draft coordinates
+- Keep edit-mode teardown from overwriting the host map view's prior
+  interaction state
 - Keep finalized polygon drafts from retaining raw coordinate buffers
 - Keep self-intersecting polygon drafts out of MapKit overlay construction
 - Keep zero-length polygon edges out of MapKit overlay construction

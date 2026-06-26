@@ -8,6 +8,7 @@
 
 import XCTest
 import CoreLocation
+import MapKit
 @testable import PlaceShapes
 
 class PlaceShapesTests: XCTestCase {
@@ -265,6 +266,43 @@ class PlaceShapesTests: XCTestCase {
         controller.setEditing(false, animated: false)
 
         XCTAssertEqual(controller.coordinates.count, 0)
+    }
+
+    func testLeavingEditingPreservesDisabledMapInteraction() {
+        let controller = PlaceShapes()
+        let mapView = MKMapView()
+        mapView.isUserInteractionEnabled = false
+        controller.mapView = mapView
+
+        controller.setEditing(true, animated: false)
+        controller.setEditing(false, animated: false)
+
+        XCTAssertFalse(mapView.isUserInteractionEnabled)
+    }
+
+    func testLeavingEditingRestoresEnabledMapInteraction() {
+        let controller = PlaceShapes()
+        let mapView = MKMapView()
+        mapView.isUserInteractionEnabled = true
+        controller.mapView = mapView
+
+        controller.setEditing(true, animated: false)
+        XCTAssertFalse(mapView.isUserInteractionEnabled)
+
+        controller.setEditing(false, animated: false)
+
+        XCTAssertTrue(mapView.isUserInteractionEnabled)
+    }
+
+    func testSettingNonEditingDoesNotEnableDisabledMapInteraction() {
+        let controller = PlaceShapes()
+        let mapView = MKMapView()
+        mapView.isUserInteractionEnabled = false
+        controller.mapView = mapView
+
+        controller.setEditing(false, animated: false)
+
+        XCTAssertFalse(mapView.isUserInteractionEnabled)
     }
 
     func testInvalidPolygonFinalizationClearsDraftCoordinates() {
