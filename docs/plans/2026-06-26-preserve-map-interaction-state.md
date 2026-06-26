@@ -48,8 +48,14 @@ outside edit mode.
 - The first hosted native run failed because the new tests referenced
   `MKMapView` without importing `MapKit`; the production target compiled. The
   test import and portable import contract were added before the final run.
-- Native XCTest is covered by the required hosted macOS check because the local
-  Linux environment does not provide Xcode.
+- Exact implementation head `63bd1564d2de03279d1adc498c696837a92e73c5`
+  passed both required hosted `macos-15` structural/native runs, including all
+  34 XCTest methods, plus Actions and Python CodeQL analysis and aggregate
+  CodeQL.
+- The required Codex review helper was attempted twice and failed before
+  analysis with OpenAI HTTP 401 on both WebSocket and HTTPS transports.
+  Immutable manual review pinned the local, remote, and PR head to the same SHA
+  and found no actionable defect.
 
 ## Evidence
 

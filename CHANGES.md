@@ -45,6 +45,13 @@ instead of unconditionally enabling host-owned interaction.
 - The first hosted native run exposed a missing `MapKit` import in the new test
   file; production compilation had succeeded. Adding the explicit test import
   corrected that compile-only defect before final review.
+- Exact implementation head `63bd1564d2de03279d1adc498c696837a92e73c5`
+  passed both hosted structural/native runs, Actions and Python CodeQL analysis,
+  and the aggregate CodeQL check.
+- The required Codex review helper was attempted on both implementation heads
+  but failed before analysis with OpenAI HTTP 401 on WebSocket and HTTPS
+  transports. Immutable manual review of the exact local, remote, and PR head
+  found no actionable defect.
 
 ### Bugs / findings
 
