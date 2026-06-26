@@ -42,6 +42,9 @@ instead of unconditionally enabling host-owned interaction.
 - Python and shell syntax checks passed.
 - Three isolated hostile mutations were rejected.
 - `git diff --check` passed.
+- The first hosted native run exposed a missing `MapKit` import in the new test
+  file; production compilation had succeeded. Adding the explicit test import
+  corrected that compile-only defect before final review.
 
 ### Bugs / findings
 

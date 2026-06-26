@@ -8,6 +8,7 @@
 
 import XCTest
 import CoreLocation
+import MapKit
 @testable import PlaceShapes
 
 class PlaceShapesTests: XCTestCase {

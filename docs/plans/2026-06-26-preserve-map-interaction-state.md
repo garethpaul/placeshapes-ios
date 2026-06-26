@@ -45,6 +45,9 @@ outside edit mode.
   behavior boundary.
 - Three isolated hostile mutations were rejected by the portable checker.
 - `git diff --check` passed.
+- The first hosted native run failed because the new tests referenced
+  `MKMapView` without importing `MapKit`; the production target compiled. The
+  test import and portable import contract were added before the final run.
 - Native XCTest is covered by the required hosted macOS check because the local
   Linux environment does not provide Xcode.
 

@@ -400,6 +400,7 @@ def main():
     if swift.count("polygonIntersectionTolerance = 0.000000000001") != 1:
         failures.append("simple polygon validation must use one reviewed intersection tolerance")
     for phrase in [
+        "import MapKit",
         "testPolygonRenderingRequiresAtLeastThreeCoordinates",
         "testPolygonRenderingRejectsNegativeCoordinateCounts",
         "XCTAssertFalse(PlaceShapes.shouldRenderPolygon(coordinateCount: -1))",
